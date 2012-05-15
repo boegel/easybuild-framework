@@ -23,7 +23,7 @@ import copy
 import os
 
 from easybuild.tools.build_log import getLog
-from easybuild.tools.modules import Modules, getSoftwareRoot
+from easybuild.tools.modules import Modules, get_software_root
 from easybuild.tools import systemtools
 
 log = getLog('Toolkit')
@@ -179,7 +179,7 @@ class Toolkit:
             deps = [dep]
 
         for dep in deps:
-            softwareRoot = getSoftwareRoot(dep['name'])
+            softwareRoot = get_software_root(dep['name'])
             if not softwareRoot:
                 log.error("%s was not found in environment (dep: %s)" % (dep['name'], dep))
 
@@ -525,9 +525,9 @@ class Toolkit:
                                                                        'libsfxsl':libsfxsl
                                                                        }
 
-        fftwsuff=""
+        fftwsuff = ""
         if self.opts['pic']:
-            fftwsuff="_pic"
+            fftwsuff = "_pic"
         # only include interface lib if it's there
         fftlib = "-Wl:-Bstatic -lfftw3xc_intel%s -Wl:-Bdynamic" % fftwsuff
 
