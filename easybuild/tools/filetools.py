@@ -29,6 +29,7 @@ import stat
 import subprocess
 import tempfile
 import time
+import errno
 
 from easybuild.tools.asyncprocess import Popen, PIPE, STDOUT, send_all, recv_some
 from easybuild.tools.build_log import getLog
@@ -323,10 +324,7 @@ def run_cmd(cmd, log_ok=True, log_all=False, simple=False, inp=None, regexp=True
         parselogForError(stdouterr, regexp, msg="Command used: %s" % cmd)
 
     if simple:
-        if ec:
-            return False
-        else:
-            return True
+        return not bool(ec)
     else:
         return (stdouterr, ec)
 
@@ -619,3 +617,32 @@ def recursiveChmod(path, permissionBits, add=True, onlyFiles=False):
                     os.chmod(absEl, perms & ~permissionBits)
             except OSError, err:
                 log.debug("Failed to chmod %s (but ignoring it): %s" % (path, err))
+
+def mkdir(directory, parrents=False):
+    """
+    Create a directory
+    Directory is the path to make
+    log is the logger to which to log debugging or error info.
+    
+    When parents is True then no error if existing 
+    and make parent directories as needed
+    (this is the mkdir -p behaviour)
+    """
+    if parrents:
+        try:
+            os.makedirs(directory)
+            log.debug("Succesfully created directory %s and needed parents" % directory)
+        except OSError, err:
+            if err.errno == errno.EEXIST:
+                log.debug("Directory %s already exitst" % directory)
+            else:
+                log.error("Failed to create directory %s: %s" % (directory, err))
+    else:#not parrents
+        try:
+            os.mkdir(directory)
+            log.debug("Succesfully created directory %s" % directory)
+        except OSError, err:
+            if err.errno == errno.EEXIST:
+                log.warning("Directory %s already exitst" % directory)
+            else:
+                log.error("Failed to create directory %s: %s" % (directory, err))
