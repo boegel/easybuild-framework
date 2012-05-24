@@ -47,7 +47,7 @@ class Dolfin(CMakePythonPackage):
         self.updatecfg('configopts', ' -DMPI_CXX_COMPILER="$MPICXX"')
 
         # Boost config parameters
-        self.updatecfg('configopts', " -DBoost_DIR=%s" % depsdict['Boost'])
+        #self.updatecfg('configopts', " -DBoost_DIR=%s" % depsdict['Boost'])
         self.updatecfg('configopts', " -DBOOST_INCLUDEDIR=%s/include" % depsdict['Boost'])
         self.updatecfg('configopts', " -DBoost_DEBUG=ON -DBOOST_ROOT=%s" % depsdict['Boost'])
 
@@ -56,8 +56,7 @@ class Dolfin(CMakePythonPackage):
         self.updatecfg('configopts', "-DARMADILLO_DIR:PATH=%s " % depsdict['Armadillo'])
 
         # specify MPI library
-        # FIXME
-        self.updatecfg('configopts', ' -DMPI_COMPILER="%s"' % self.getenv('MPICC'))
+        self.updatecfg('configopts', ' -DMPI_COMPILER="%s"' % os.getenv('MPICC'))
 
         if not os.getenv('MPI_LIB_SHARED') or not os.getenv('MPI_INC'):
             self.updatecfg('configopts', ' -DMPI_LIBRARY="%s"' % os.getenv('MPI_LIB_SHARED'))
@@ -67,9 +66,9 @@ class Dolfin(CMakePythonPackage):
 
         # specify Python paths
         python_short_ver = ".".join(os.getenv('SOFTVERSIONPYTHON').split(".")[0:2])
-        self.updatecfg('configopts', " -DPYTHON_INCLUDE_PATH=%s/include/python%s" % (depsdict['Python'], 
+        self.updatecfg('configopts', " -DPYTHON_INCLUDE_PATH=%s/include/python%s" % (depsdict['Python'],
                                                                                      python_short_ver))
-        self.updatecfg('configopts', " -DPYTHON_LIBRARIES=%s/lib/libpython%s.so" % (depsdict['Python'], 
+        self.updatecfg('configopts', " -DPYTHON_LIBRARY=%s/lib/libpython%s.so" % (depsdict['Python'],
                                                                                     python_short_ver))
 
         # SuiteSparse config params
@@ -84,8 +83,9 @@ class Dolfin(CMakePythonPackage):
         self.updatecfg('configopts', umfpack_params)
 
         # ParMETIS and SCOTCH
+
+        self.updatecfg('configopts', ' -DSCOTCH_DIR="%s" -DSCOTCH_DEBUG:BOOL=ON' % depsdict['SCOTCH'])
         self.updatecfg('configopts', ' -DPARMETIS_DIR="%s"' % depsdict['ParMETIS'])
-        self.updatecfg('configopts', ' -DSCOTCH_DIR="%s"' % depsdict['SCOTCH'])
 
         # BLACS and LAPACK 
         self.updatecfg('configopts', ' -DBLAS_LIBRARIES:PATH="$LIBBLAS"')
@@ -95,14 +95,14 @@ class Dolfin(CMakePythonPackage):
         openmp = get_openmp_flag(self.log)
         self.updatecfg('configopts', ' -DOpenMP_CXX_FLAGS="%s"' % openmp)
         self.updatecfg('configopts', ' -DOpenMP_C_FLAGS="%s"' % openmp)
-        
+
         CMakePythonPackage.configure(self)
 
     def make_module_extra(self):
         """Set extra environment variables for Dolfin."""
 
         txt = CMakePythonPackage.make_module_extra(self)
-    
+
         # Dolfin needs to find Boost and the UFC pkgconfig file
         txt += "setenv\tBOOST_DIR\t%s\n" % get_software_root('Boost')
         txt += "prepend-path\tPKG_CONFIG_PATH\t%s/lib/pkgconfig\n" % get_software_root('UFC')
@@ -111,11 +111,11 @@ class Dolfin(CMakePythonPackage):
         envvars = ['I_MPI_CXX', 'I_MPI_CC']
         for envvar in envvars:
             envar_val = os.getenv(envvar)
-            if not envar_val:
+            if not envar_val and self.tk.name in ['ictce', 'iqacml']:
                 self.log.error("%s not defined in environment, needed by DOLFIN" % envvar)
             else:
                 txt += "setenv\t%s\t%s\n" % (envvar, envar_val)
-    
+
         return txt
 
     def sanitycheck(self):
@@ -123,8 +123,8 @@ class Dolfin(CMakePythonPackage):
 
         if not self.getcfg('sanityCheckPaths'):
 
-            self.setcfg('sanityCheckPaths', {'files': ['bin/dolfin-%s' % x for x in ['version','convert',
-                                                                                     'order','plot']] 
+            self.setcfg('sanityCheckPaths', {'files': ['bin/dolfin-%s' % x for x in ['version', 'convert',
+                                                                                     'order', 'plot']]
                                                     + ['include/dolfin.h'],
                                              'dirs':['%s/dolfin' % self.pylibdir]
                                             })

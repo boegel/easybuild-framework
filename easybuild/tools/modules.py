@@ -162,7 +162,7 @@ class Modules:
             modinfo = self.show(name, version)
 
             # second line of module show output contains full path of module file
-            return modinfo.split('\n')[1].replace(':','')
+            return modinfo.split('\n')[1].replace(':', '')
 
     def runModule(self, *args, **kwargs):
         """
@@ -185,7 +185,7 @@ class Modules:
         os.environ['MODULEPATH'] = originalModulePath
 
         if kwargs.get('return_output', False):
-            return (stdout+stderr)
+            return (stdout + stderr)
 
         else:
             # Change the environment
@@ -287,7 +287,7 @@ def searchModule(path, query):
         except ValueError:
             pass
 
-def getSoftwareRoot(name):
+def get_software_root(name):
     """
     Return the software root set for a particular package.
     """
