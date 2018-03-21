@@ -68,6 +68,7 @@ script:
     - if [ ! -z $MOD_INIT ]; then source $MOD_INIT; type module; fi
     # install GitHub token
     - if [ ! -z $GITHUB_TOKEN ]; then
+        echo "Installing GitHub token provided in \$GITHUB_TOKEN...";
         if [ "x$TRAVIS_PYTHON_VERSION" == 'x2.6' ];
             then SET_KEYRING="keyring.set_keyring(keyring.backends.file.PlaintextKeyring())";
             else SET_KEYRING="import keyrings; keyring.set_keyring(keyrings.alt.file.PlaintextKeyring())";
@@ -89,6 +90,7 @@ script:
     # this is done to catch possible packaging issues
     - cd $HOME
     # check GitHub configuration
+    - python -c "from easybuild.tools.github import fetch_github_token; print fetch_github_token('easybuild_test')" | wc -c
     - eb --check-github --github-user=easybuild_test
     # run test suite
     - python -O -m test.framework.suite

@@ -1397,6 +1397,7 @@ def fetch_github_token(user):
     if token is None:
         # failed to obtain token, log message explaining why
         _log.warning(msg)
+        sys.stderr.write(msg + '\n')
     else:
         _log.info("Successfully obtained GitHub token for user %s from keyring." % user)
 
