@@ -87,14 +87,16 @@ class Slurm(JobBackend):
 
         :param dependencies: jobs on which this job depends.
         """
+        submit_cmd = 'sbatch'
+
         if dependencies:
             job.job_specs['dependency'] = self.job_deps_type + ':' + ':'.join(str(d.jobid) for d in dependencies)
+            submit_cmd += " --kill-on-invalid-dep=yes"
 
         # submit job with hold in place
         job.job_specs['hold'] = True
 
         self.log.info("Submitting job with following specs: %s", job.job_specs)
-        submit_cmd = 'sbatch'
         for key in sorted(job.job_specs):
             if key in ['hold']:
                 if job.job_specs[key]:
@@ -146,9 +148,6 @@ class SlurmJob(object):
         self.name = name
 
         self.job_specs = {'wrap': self.script, 'job-name': self.name}
-
-        if env_vars:
-            self.job_specs['export'] = ','.join(sorted(env_vars.keys()))
 
         max_walltime = build_option('job_max_walltime')
         if hours is None:
