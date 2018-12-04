@@ -43,7 +43,7 @@ import tempfile
 import time
 from vsc.utils import fancylogger
 
-from easybuild.tools.build_log import EasyBuildError
+from easybuild.tools.build_log import EasyBuildError, print_warning
 from easybuild.tools.filetools import rmtree2
 from easybuild.tools.repository.filerepo import FileRepository
 
@@ -105,6 +105,7 @@ class HgRepository(FileRepository):
         except (HgCommandError, OSError), err:
             # it might already have existed
             self.log.warning("Mercurial local repo initialization failed, it might already exist: %s" % err)
+            print_warning("Mercurial local repo initialization failed, it might already exist: %s" % err)
 
         # local repo should now exist, let's connect to it again
         try:
