@@ -61,6 +61,9 @@ before_install:
     # git config is required to make actual git commits (cfr. tests for GitRepository)
     - git config --global user.name "Travis CI"
     - git config --global user.email "travis@travis-ci.org"
+    # disable TLS 1.0 warning produced by Mercurial, makes test_hgrepo fail
+    # see also https://www.mercurial-scm.org/wiki/SecureConnections
+    - if [ "x$TRAVIS_PYTHON_VERSION" == 'x2.6' ]; then echo "[hostsecurity]" > $HOME/.hgrc; echo "disabletls10warning = true" >> $HOME/.hgrc; fi
 install:
     # install vsc-base (& vsc-install) dependencies for EasyBuild
     - easy_install vsc-base
