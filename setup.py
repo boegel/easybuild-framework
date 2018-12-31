@@ -43,6 +43,7 @@ API_VERSION = str(VERSION).split('.')[0]
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+
 # log levels: 0 = WARN (default), 1 = INFO, 2 = DEBUG
 log.set_verbosity(1)
 
@@ -69,6 +70,7 @@ def find_rel_test():
     os.chdir(current)
     return res
 
+
 easybuild_packages = [
     "easybuild", "easybuild.base",
     "easybuild.framework", "easybuild.framework.easyconfig", "easybuild.framework.easyconfig.format",
@@ -91,7 +93,7 @@ implement support for installing particular (groups of) software packages.""",
     url="https://easybuilders.github.io/easybuild",
     packages=easybuild_packages,
     package_dir={'test.framework': 'test/framework'},
-    package_data={'test.framework': find_rel_test(),},
+    package_data={'test.framework': find_rel_test()},
     scripts=[
         'eb',
         # bash completion
@@ -119,8 +121,8 @@ implement support for installing particular (groups of) software packages.""",
     platforms="Linux",
     test_suite="test.framework.suite",
     zip_safe=False,
-    install_requires=['setuptools >= 0.6'],
-    extras_require = {
+    setup_requires=['setuptools >= 0.6'],
+    extras_require={
         'yeb': ["PyYAML >= 3.11"],
         'coloredlogs': [
             'coloredlogs',

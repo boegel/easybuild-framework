@@ -25,7 +25,7 @@ addons:
     packages:
       # for environment modules/Lmod
       - tcl8.5
-      # for EasyBuild
+      # for EasyBuild (installation only)
       - python-setuptools
       # for GitPython, python-hglib
       - git
@@ -95,6 +95,8 @@ script:
     # to run tests on an *installed* version of the EasyBuild framework;
     # this is done to catch possible packaging issues
     - cd $HOME
+    # uninstall setuptools (only needed for installing EasyBuild)
+    - pip uninstall setuptools
     # check GitHub configuration
     - eb --check-github --github-user=easybuild_test
     # run test suite
