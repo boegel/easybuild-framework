@@ -1,0 +1,26 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: circleci/python:2.7.15
+    steps:
+      - checkout
+      - run: sudo apt install rsync  # required to install Lua (for Lmod)
+      - run: easy_install --user vsc-base
+      - run: pwd
+      - run: 
+          command: |
+            # can't use $CIRCLE_WORKING_DIRECTORY because ~/project does not exist?!
+            export START_DIR=$PWD
+            export INSTALL_DEP=$START_DIR/easybuild/scripts/install_eb_dep.sh
+            source $INSTALL_DEP lua-5.1.4.8 $HOME > lua_build.out 2>&1
+            source $INSTALL_DEP Lmod-7.8.5 $HOME > Lmod_build.out 2>&1
+            echo $MOD_INIT
+            source $MOD_INIT
+            cd $START_DIR
+            python -O -m test.framework.suite
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - test
