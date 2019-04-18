@@ -29,14 +29,17 @@ jobs:
       - run: pip install --user autopep8 GitPython keyring keyrings.alt pycodestyle python-graph-dot python-hglib PyYAML requests
       - run: pwd
       - <<: *test_suite
-  py2716:
+  py26:
     docker:
-      - image: circleci/python:2.7.16
-    steps:  
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run: sudo apt-get remove python
+      - run: sudo apt-get install python2.6
+      - run: sudo apt install python-pip
+      - run: python -V
       - checkout
       - run: sudo apt install rsync  # required to install Lua (for Lmod)
       - run: easy_install --user vsc-base
-      - run: sudo apt install python-pip
       - run: pip install --user autopep8 GitPython keyring keyrings.alt pycodestyle python-graph-dot python-hglib PyYAML requests
       - run: pwd
       - <<: *test_suite
@@ -47,4 +50,4 @@ workflows:
   build_and_test:
     jobs:
       - py27 
-      - py2716
+      - py26
