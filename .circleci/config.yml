@@ -1,8 +1,26 @@
 version: 2
+
+test_suite: &test_suite
+  - run:
+      environment:
+        # easybuild-framework tests expect that $USER is defined ('circleci' matches $HOME value)
+        # https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables
+        USER: circleci
+      command: |
+        # can't use $CIRCLE_WORKING_DIRECTORY because ~/project does not exist?!
+        export START_DIR=$PWD
+        export INSTALL_DEP=$START_DIR/easybuild/scripts/install_eb_dep.sh
+        source $INSTALL_DEP lua-5.1.4.8 $HOME > lua_build.out 2>&1
+        source $INSTALL_DEP Lmod-7.8.5 $HOME > Lmod_build.out 2>&1
+        echo $MOD_INIT
+        source $MOD_INIT
+        cd $START_DIR
+        python -O -m test.framework.suite
+
 jobs:
-  test:
+  py27:
     docker:
-      - image: circleci/python:2.7.15
+      - image: circleci/python:2.7
     steps:
       - checkout
       - run: sudo apt install rsync  # required to install Lua (for Lmod)
@@ -10,23 +28,23 @@ jobs:
       - run: sudo apt install python-pip
       - run: pip install --user autopep8 GitPython keyring keyrings.alt pycodestyle python-graph-dot python-hglib PyYAML requests
       - run: pwd
-      - run:
-          environment:
-            # easybuild-framework tests expect that $USER is defined ('circleci' matches $HOME value)
-            # https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables
-            USER: circleci
-          command: |
-            # can't use $CIRCLE_WORKING_DIRECTORY because ~/project does not exist?!
-            export START_DIR=$PWD
-            export INSTALL_DEP=$START_DIR/easybuild/scripts/install_eb_dep.sh
-            source $INSTALL_DEP lua-5.1.4.8 $HOME > lua_build.out 2>&1
-            source $INSTALL_DEP Lmod-7.8.5 $HOME > Lmod_build.out 2>&1
-            echo $MOD_INIT
-            source $MOD_INIT
-            cd $START_DIR
-            python -O -m test.framework.suite
+      - <<: *test_suite
+  py2716:
+    docker:
+      - image: circleci/python:2.7.16
+    steps:  
+      - checkout
+      - run: sudo apt install rsync  # required to install Lua (for Lmod)
+      - run: easy_install --user vsc-base
+      - run: sudo apt install python-pip
+      - run: pip install --user autopep8 GitPython keyring keyrings.alt pycodestyle python-graph-dot python-hglib PyYAML requests
+      - run: pwd
+      - <<: *test_suite
+      
+
 workflows:
   version: 2
   build_and_test:
     jobs:
-      - test
+      - py27 
+      - py2716
