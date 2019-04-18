@@ -7,10 +7,13 @@ jobs:
       - checkout
       - run: sudo apt install rsync  # required to install Lua (for Lmod)
       - run: easy_install --user vsc-base
+      - run: sudo apt install python-pip
+      - run: pip install --user autopep8 GitPython keyring keyrings.alt pycodestyle python-graph-dot python-hglib PyYAML requests
       - run: pwd
       - run:
           environment:
             # easybuild-framework tests expect that $USER is defined ('circleci' matches $HOME value)
+            # https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables
             USER: circleci
           command: |
             # can't use $CIRCLE_WORKING_DIRECTORY because ~/project does not exist?!
