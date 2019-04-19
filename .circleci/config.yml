@@ -34,6 +34,7 @@ jobs:
       - image: circleci/python:2.7-jessie
     steps:
       - run: sudo apt-get remove python
+      - run: apt-cache search python
       - run: sudo apt-get install python2.6
       - run: sudo apt install python-pip
       - run: python -V
