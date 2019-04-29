@@ -957,10 +957,11 @@ moduleclass = 'tools'
 """
 
 # check Python version
-if sys.version_info[0] != 2 or sys.version_info[1] < 6:
+py_maj_ver, py_min_ver = sys.version_info[0], sys.version_info[1]
+if py_maj_ver < 2 or (py_maj_ver == 2 and py_min_ver < 6) or (py_maj_ver == 3 and py_min_ver < 4):
     pyver = sys.version.split(' ')[0]
-    sys.stderr.write("ERROR: Incompatible Python version: %s (should be Python 2 >= 2.6)\n" % pyver)
-    sys.stderr.write("Please try again using 'python2 %s <prefix>'\n" % os.path.basename(__file__))
+    sys.stderr.write("ERROR: Incompatible Python version: %s (should be Python 2.x >= 2.6 or 3.x >= 3.4)\n" % pyver)
+    sys.stderr.write("Please try again with a 'python' command corresponding to a more recent Python version.")
     sys.exit(1)
 
 # distribute_setup.py script (https://pypi.python.org/pypi/distribute)
