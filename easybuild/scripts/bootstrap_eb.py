@@ -49,12 +49,18 @@ import site
 import sys
 import tempfile
 import traceback
-import urllib2
 from distutils.version import LooseVersion
 from hashlib import md5
 
+try:
+    # Python 2.x
+    from urllib2 import urlopen, HTTPError, URLError
+except ImportError:
+    # Python 3.x
+    from urllib.request import urlopen, HTTPError, URLError
 
-EB_BOOTSTRAP_VERSION = '20190322.01'
+
+EB_BOOTSTRAP_VERSION = '20190429.01'
 
 # argparse preferrred, optparse deprecated >=2.7
 HAVE_ARGPARSE = False
@@ -100,6 +106,7 @@ easybuild_module_syntax = os.environ.get('EASYBUILD_MODULE_SYNTAX', None)
 easybuild_installpath_modules = os.environ.get('EASYBUILD_INSTALLPATH_MODULES', None)
 easybuild_subdir_modules = os.environ.get('EASYBUILD_SUBDIR_MODULES', 'modules')
 easybuild_suffix_modules_path = os.environ.get('EASYBUILD_SUFFIX_MODULES_PATH', 'all')
+
 
 #
 # Utility functions
@@ -236,7 +243,6 @@ def prep(path):
         # if Lmod is not being used, use Tcl module syntax
         os.environ['EASYBUILD_MODULE_SYNTAX'] = 'Tcl'
         debug("$EASYBUILD_MODULE_SYNTAX set to %s" % os.environ['EASYBUILD_MODULE_SYNTAX'])
-
 
 
 def check_module_command(tmpdir):
@@ -677,8 +683,8 @@ def stage2(tmpdir, templates, install_path, distribute_egg_dir, sourcepath):
         # determine download URL via PyPI's 'simple' API
         pkg_simple = None
         try:
-            pkg_simple = urllib2.urlopen('https://pypi.python.org/simple/%s' % pkg, timeout=10).read()
-        except (urllib2.URLError, urllib2.HTTPError) as err:
+            pkg_simple = urlopen('https://pypi.python.org/simple/%s' % pkg, timeout=10).read()
+        except (URLError, HTTPError) as err:
             # failing to figure out the package download URl may be OK when source tarballs are provided
             if sourcepath:
                 info("Ignoring failed attempt to determine '%s' download URL since source tarballs are provided" % pkg)
@@ -916,6 +922,7 @@ def main():
     info("By default, EasyBuild will install software to $HOME/.local/easybuild.")
     info("To install software with EasyBuild to %s, make sure $EASYBUILD_INSTALLPATH is set accordingly." % install_path)
     info("See http://easybuild.readthedocs.org/en/latest/Configuration.html for details on configuring EasyBuild.")
+
 
 # template easyconfig file for EasyBuild
 EASYBUILD_EASYCONFIG_TEMPLATE = """
