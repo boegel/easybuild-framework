@@ -3269,6 +3269,7 @@ class CommandLineOptionsTest(EnhancedTestCase):
         self.assertTrue(regex.search(txt), "Pattern '%s' found in: %s" % (regex.pattern, txt))
 
     def test_fetch(self):
+        """Test --fetch."""
         options = EasyBuildOptions(go_args=['--fetch'])
 
         self.assertTrue(options.options.fetch)
@@ -3291,6 +3292,38 @@ class CommandLineOptionsTest(EnhancedTestCase):
 
         regex = re.compile("^== creating build dir, resetting environment\.\.\.$")
         self.assertFalse(regex.search(stdout), "Pattern '%s' found in: %s" % (regex.pattern, stdout))
+
+    def test_fetch_multi_deps(self):
+        """Test --fetch for easyconfig that uses multi_deps (and templates in source file that depend on it)."""
+
+        test_ec_txt = '\n'.join([
+            'easyblock = "ConfigureMake"',
+            'name = "example"',
+            'version = "1.2.3"',
+            'homepage = "https://example.com"',
+            'description = "Example"',
+            'toolchain = {"name": "dummy", "version": "dummy"}',
+            'sources = ["example-%(version)s-py%(pymajver)s.whl"]',
+            'multi_deps = {"Python": ["3.7.2", "2.7.15"]}',
+        ])
+        test_ec = os.path.join(self.test_prefix, 'test.eb')
+        write_file(test_ec, test_ec_txt)
+
+        args = [test_ec, '--fetch', '--sourcepath=%s' % self.test_prefix]
+
+        # --fetch should fail is one of the source files is not found
+        error_pattern = "Couldn't find file example-1.2.3-py3.whl anywhere"
+        self.assertErrorRegex(EasyBuildError, error_pattern, self.eb_main, args, do_build=True, raise_error=True)
+
+        # create dummy source files to make --fetch happy
+        write_file(os.path.join(self.test_prefix, 'example-1.2.3-py3.whl'), '')
+
+        error_pattern = error_pattern.replace('py3', 'py2')
+        self.assertErrorRegex(EasyBuildError, error_pattern, self.eb_main, args, do_build=True, raise_error=True)
+
+        write_file(os.path.join(self.test_prefix, 'example-1.2.3-py2.whl'), '')
+
+        self.eb_main(args, do_build=True, raise_error=True)
 
     def test_parse_external_modules_metadata(self):
         """Test parse_external_modules_metadata function."""

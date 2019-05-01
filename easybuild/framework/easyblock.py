@@ -1561,8 +1561,9 @@ class EasyBlock(object):
         # prepare for next iteration (if any)
         self.iter_idx += 1
 
-    def post_iter_step(self):
-        """Restore options that were iterated over"""
+    def stop_iterating(self):
+        """Stop iterating and restore options that were iterated over."""
+
         # disable templating, since we're messing about with values in self.cfg
         prev_enable_templating = self.cfg.enable_templating
         self.cfg.enable_templating = False
@@ -1577,6 +1578,10 @@ class EasyBlock(object):
             self.log.debug("Restored value of '%s' that was iterated over: %s", opt, self.cfg[opt])
 
         self.cfg.stop_iterating()
+
+        # restore (in case we start iterating again later)
+        self.iter_idx = 0
+        self.iter_opts = {}
 
         # re-enable templating before self.cfg values are used
         self.cfg.enable_templating = prev_enable_templating
@@ -1668,10 +1673,9 @@ class EasyBlock(object):
                 self.log.info("Removing existing module file %s", self.mod_filepath)
                 remove_file(self.mod_filepath)
 
-    def fetch_step(self, skip_checksums=False):
-        """Fetch source files and patches (incl. extensions)."""
+    def check_easybuild_version_param(self):
+        """Check 'easybuild_version' easyconfig parameter (if defined)."""
 
-        # check EasyBuild version
         easybuild_version = self.cfg['easybuild_version']
         if not easybuild_version:
             self.log.warn("Easyconfig does not specify an EasyBuild-version (key 'easybuild_version')! "
@@ -1684,6 +1688,28 @@ class EasyBlock(object):
                 raise EasyBuildError("EasyBuild-version %s is newer than the currently running one. Aborting!",
                                      easybuild_version)
 
+    def fetch_step(self, skip_checksums=False):
+        """Fetch source files and patches (incl. extensions)."""
+
+        self.check_easybuild_version_param()
+
+        if self.cfg['multi_deps']:
+            # if multi_deps is used, the sources/patches (of extensions) may use templates
+            # for dependencies specified via multi_deps (e.g. %(pymajver)s for Python),
+            # so we need to iterate over each multi_deps entry to resolve these templates...
+            # done here to avoid hoisting the fetch step into the list of iterative steps (which would break --fetch)
+            for _ in range(self.det_iter_cnt()):
+                self.handle_iterate_opts()
+                self.cfg.generate_template_values()
+                self._fetch_step(skip_checksums=skip_checksums)
+
+            # restore to prepare for actually iterating over build/installation steps
+            self.stop_iterating()
+        else:
+            self._fetch_step(skip_checksums=skip_checksums)
+
+    def _fetch_step(self, skip_checksums=False):
+        """Fetch source files and patches (incl. extensions)."""
         if self.dry_run:
 
             self.dry_run_msg("Available download URLs for sources/patches:")
@@ -2113,6 +2139,10 @@ class EasyBlock(object):
         # cleanup (unload fake module, remove fake module dir)
         if fake_mod_data:
             self.clean_up_fake_module(fake_mod_data)
+
+    def post_iter_step(self):
+        """Post-iteration step."""
+        self.stop_iterating()
 
     def package_step(self):
         """Package installed software (e.g., into an RPM), if requested, using selected package tool."""
