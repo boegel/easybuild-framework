@@ -5,9 +5,16 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        python: [2.7, 3.5, 3.6, 3.7]
+        python: [2.7, 3.6]
         lmod_version: [6.5.1, 7.8.22, 8.0.9]
         module_syntax: [Tcl, Lua]
+        include:
+            - python: 3.5
+              lmod_version: 7.8.22
+              module_syntax: Lua
+            - python: 3.7
+              lmod_version: 7.8.22
+              module_syntax: Lua
     steps:
     - uses: actions/checkout@v1
     - name: set up Python
