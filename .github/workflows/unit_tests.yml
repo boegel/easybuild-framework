@@ -22,9 +22,12 @@ jobs:
     - name: test 'eb' command
       run: EB_PYTHON=python ./eb --show-system-info
     - name: install modules tool + run test suite
+      env:
+          INSTALL_DEP: $GITHUB_WORKSPACE/easybuild/scripts/install_eb_dep.sh
       run: |
           # install Lmod
-          source $GITHUB_WORKSPACE/easybuild/scripts/install_eb_dep.sh Lmod-${{matrix.lmod_version}} $HOME
+          source $INSTALL_DEP Lmod-${{matrix.lmod_version}} $HOME > install_Lmod.out 2>&1
+          ec=$?; if [ $ec -ne 0 ]; then cat install_Lmod.out; exit $ec; fi
           # initialize environment for modules tool
           if [ ! -z $MOD_INIT ]; then source $MOD_INIT; type module; fi
           # configure EasyBuild
