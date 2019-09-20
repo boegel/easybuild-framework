@@ -23,14 +23,12 @@
 # along with EasyBuild.  If not, see <http://www.gnu.org/licenses/>.
 ##
 """
-This declares the namespace of the framework submodule of EasyBuild,
-which is a collection of additional modules/classes to be used for software compilation
+Dummy easyblock for OpenMPI
 
-:author: Stijn De Weirdt (Ghent University)
-:author: Dries Verdegem (Ghent University)
-:author: Kenneth Hoste (Ghent University)
-:author: Pieter De Baets (Ghent University)
-:author: Jens Timmerman (Ghent University)
+@author: Kenneth Hoste (Ghent University)
 """
-import os
-__path__ = __import__('pkgutil').extend_path([os.path.abspath(p) for p in __path__], __name__)
+from easybuild.framework.easyblock import EasyBlock
+
+
+class EB_OpenMPI(EasyBlock):
+    pass

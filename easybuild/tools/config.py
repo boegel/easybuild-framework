@@ -205,6 +205,7 @@ BUILD_OPTIONS_CMDLINE = {
         'zip_logs',
     ],
     False: [
+        'add_dummy_to_minimal_toolchains',
         'add_system_to_minimal_toolchains',
         'allow_modules_tool_mismatch',
         'consider_archived_easyconfigs',
@@ -215,7 +216,6 @@ BUILD_OPTIONS_CMDLINE = {
         'enforce_checksums',
         'extended_dry_run',
         'experimental',
-        'fixed_installdir_naming_scheme',
         'force',
         'group_writable_installdir',
         'hidden',
@@ -248,6 +248,7 @@ BUILD_OPTIONS_CMDLINE = {
         'cleanup_easyconfigs',
         'cleanup_tmpdir',
         'extended_dry_run_ignore_errors',
+        'fixed_installdir_naming_scheme',
         'mpi_tests',
         'map_toolchains',
         'modules_tool_version_check',

@@ -1181,22 +1181,6 @@ class EasyBlock(object):
                 modloadmsg += '\n'
             lines.append(self.module_generator.msg_on_load(modloadmsg))
 
-        if self.cfg['modtclfooter']:
-            if isinstance(self.module_generator, ModuleGeneratorTcl):
-                self.log.debug("Including Tcl footer in module: %s", self.cfg['modtclfooter'])
-                lines.extend([self.cfg['modtclfooter'], '\n'])
-            else:
-                self.log.warning("Not including footer in Tcl syntax in non-Tcl module file: %s",
-                                 self.cfg['modtclfooter'])
-
-        if self.cfg['modluafooter']:
-            if isinstance(self.module_generator, ModuleGeneratorLua):
-                self.log.debug("Including Lua footer in module: %s", self.cfg['modluafooter'])
-                lines.extend([self.cfg['modluafooter'], '\n'])
-            else:
-                self.log.warning("Not including footer in Lua syntax in non-Lua module file: %s",
-                                 self.cfg['modluafooter'])
-
         for (key, value) in self.cfg['modaliases'].items():
             lines.append(self.module_generator.set_alias(key, value))
 
@@ -1233,6 +1217,22 @@ class EasyBlock(object):
         if self.modules_footer is not None:
             self.log.debug("Including specified footer into module: '%s'" % self.modules_footer)
             footer.append(self.modules_footer)
+
+        if self.cfg['modtclfooter']:
+            if isinstance(self.module_generator, ModuleGeneratorTcl):
+                self.log.debug("Including Tcl footer in module: %s", self.cfg['modtclfooter'])
+                footer.extend([self.cfg['modtclfooter'], '\n'])
+            else:
+                self.log.warning("Not including footer in Tcl syntax in non-Tcl module file: %s",
+                                 self.cfg['modtclfooter'])
+
+        if self.cfg['modluafooter']:
+            if isinstance(self.module_generator, ModuleGeneratorLua):
+                self.log.debug("Including Lua footer in module: %s", self.cfg['modluafooter'])
+                footer.extend([self.cfg['modluafooter'], '\n'])
+            else:
+                self.log.warning("Not including footer in Lua syntax in non-Lua module file: %s",
+                                 self.cfg['modluafooter'])
 
         return ''.join(footer)
 
@@ -1813,6 +1813,9 @@ class EasyBlock(object):
             checksum_issues.append(msg)
 
         for fn, checksum in zip(sources + patches, checksums):
+            if isinstance(checksum, dict):
+                checksum = checksum.get(fn)
+
             if not is_sha256_checksum(checksum):
                 msg = "Non-SHA256 checksum found for %s: %s" % (fn, checksum)
                 checksum_issues.append(msg)
@@ -1893,11 +1896,12 @@ class EasyBlock(object):
             if not apply_patch(patch['path'], src, copy=copy_patch, level=level):
                 raise EasyBuildError("Applying patch %s failed", patch['name'])
 
-    def prepare_step(self, start_dir=True):
+    def prepare_step(self, start_dir=True, load_tc_deps_modules=True):
         """
         Pre-configure step. Set's up the builddir just before starting configure
 
         :param start_dir: guess start directory based on unpacked sources
+        :param load_tc_deps_modules: load modules for toolchain and dependencies in build environment
         """
         if self.dry_run:
             self.dry_run_msg("Defining build environment, based on toolchain (options) and specified dependencies...\n")
@@ -1938,7 +1942,8 @@ class EasyBlock(object):
 
         # prepare toolchain: load toolchain module and dependencies, set up build environment
         self.toolchain.prepare(self.cfg['onlytcmod'], deps=self.cfg.dependencies(), silent=self.silent,
-                               rpath_filter_dirs=self.rpath_filter_dirs, rpath_include_dirs=self.rpath_include_dirs)
+                               loadmod=load_tc_deps_modules, rpath_filter_dirs=self.rpath_filter_dirs,
+                               rpath_include_dirs=self.rpath_include_dirs)
 
         # keep track of environment variables that were tweaked and need to be restored after environment got reset
         # $TMPDIR may be tweaked for OpenMPI 2.x, which doesn't like long $TMPDIR paths...

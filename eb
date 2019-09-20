@@ -43,11 +43,11 @@ function verbose() {
 }
 
 PYTHON=
-for python_cmd in ${EB_PYTHON} 'python2' 'python3' 'python'; do
+for python_cmd in ${EB_PYTHON} 'python' 'python3' 'python2'; do
 
     verbose "Considering '$python_cmd'..."
 
-    which $python_cmd &> /dev/null
+    command -v $python_cmd &> /dev/null
     if [ $? -eq 0 ]; then
 
         # make sure Python version being used is compatible
@@ -90,5 +90,5 @@ then
     export FANCYLOGGER_IGNORE_MPI4PY=1
 fi
 
-verbose "$PYTHON -m easybuild.main $@"
+verbose "$PYTHON -m easybuild.main `echo \"$@\"`"
 $PYTHON -m easybuild.main "$@"
