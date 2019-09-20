@@ -32,7 +32,9 @@ jobs:
       run: |
           # initialize environment for modules tool
           source $(cat mod_init); type module
+          # make sure 'eb' is available via $PATH
+          export PATH=$PWD:$PATH
           # configure EasyBuild
           export TEST_EASYBUILD_MODULE_SYNTAX=${{matrix.module_syntax}}
           # run test suite
-          python -O -m test.framework.modules
+          python -O -m test.framework.suite
