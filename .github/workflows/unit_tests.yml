@@ -21,15 +21,17 @@ jobs:
         sudo ln -s /usr/lib/x86_64-linux-gnu/lua/5.1/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.1/posix.so;
     - name: test 'eb' command
       run: EB_PYTHON=python ./eb --show-system-info
-    - name: install modules tool + run test suite
-      env:
-          INSTALL_DEP: $GITHUB_WORKSPACE/easybuild/scripts/install_eb_dep.sh
+    - name: install modules tool
       run: |
+          export INSTALL_DEP=$GITHUB_WORKSPACE/easybuild/scripts/install_eb_dep.sh
           # install Lmod
-          source $INSTALL_DEP Lmod-${{matrix.lmod_version}} $HOME > install_Lmod.out 2>&1
-          ec=$?; if [ $ec -ne 0 ]; then cat install_Lmod.out; exit $ec; fi
+          source $INSTALL_DEP Lmod-${{matrix.lmod_version}} $HOME
+          # changes in environment are not passed to other steps, so need to create a file for $MOD_INIT
+          echo $MOD_INIT > mod_init
+    - name: run test suite
+      run: |
           # initialize environment for modules tool
-          if [ ! -z $MOD_INIT ]; then source $MOD_INIT; type module; fi
+          source $(cat mod_init); type module
           # configure EasyBuild
           export TEST_EASYBUILD_MODULE_SYNTAX=${{matrix.module_syntax}}
           # run test suite
