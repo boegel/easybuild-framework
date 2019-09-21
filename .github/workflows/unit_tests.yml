@@ -34,7 +34,8 @@ jobs:
 
     - name: install GitHub token (if available)
       env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        # see https://github.com/<username>/easybuild-framework/settings/secrets
+        GITHUB_TOKEN: ${{secrets.TEST_GITHUB_TOKEN}}
       run: |
         if [ ! -z $GITHUB_TOKEN ]; then
           if [ "x${{matrix.python}}" == 'x2.6' ];
