@@ -26,7 +26,7 @@ jobs:
         # for GitPython, python-hglib
         sudo apt-get install git mercurial
         # dep for GC3Pie
-        sudo apt-get time
+        sudo apt-get install time
         # Python packages
         pip --version
         pip install --upgrade pip
