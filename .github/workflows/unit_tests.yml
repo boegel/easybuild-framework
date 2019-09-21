@@ -54,7 +54,6 @@ jobs:
 
     - name: run test suite
       env:
-        TEST_EASYBUILD_GITHUB_USER: easybuild_test
         TEST_EASYBUILD_MODULE_SYNTAX: ${{matrix.module_syntax}}
       run: |
           # initialize environment for modules tool
@@ -65,6 +64,6 @@ jobs:
           # gather some useful info on test system
           eb --show-system-info
           # check GitHub configuration
-          eb --check-github
+          eb --check-github --github-user=easybuild_test
           # run test suite
           python -O -m test.framework.suite
