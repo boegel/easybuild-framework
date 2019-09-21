@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         python: [2.7, 3.6]
-        lmod_version: [7.8.22]
+        modules_tool: [Lmod-6.6.3, Lmod-7.8.22, Lmod-8.1.14]
         module_syntax: [Lua]
       fail-fast: false
     steps:
@@ -18,11 +18,15 @@ jobs:
         python-version: ${{matrix.python}}
         architecture: x64
 
-    - name: install packages
+    - name: install OS & Python packages
       run: |
-        # OS packages
-        sudo apt-get install tcl lua5.1 liblua5.1-0-dev lua-posix lua-filesystem git mercurial time
+        # for modules tool
+        sudo apt-get install lua5.1 liblua5.1-0-dev lua-filesystem lua-posix lua-filesystem
         sudo ln -s /usr/lib/x86_64-linux-gnu/lua/5.1/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.1/posix.so
+        # for GitPython, python-hglib
+        sudo apt-get install git mercurial
+        # dep for GC3Pie
+        sudo apt-get time
         # Python packages
         pip --version
         pip install --upgrade pip
@@ -50,7 +54,7 @@ jobs:
       run: |
           export INSTALL_DEP=$GITHUB_WORKSPACE/easybuild/scripts/install_eb_dep.sh
           # install Lmod
-          source $INSTALL_DEP Lmod-${{matrix.lmod_version}} $HOME
+          source $INSTALL_DEP ${{matrix.modules_tool}} $HOME
           # changes in environment are not passed to other steps, so need to create a file for $MOD_INIT
           echo $MOD_INIT > mod_init
 
