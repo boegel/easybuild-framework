@@ -21,7 +21,7 @@ jobs:
     - name: install OS & Python packages
       run: |
         # for modules tool
-        sudo apt-get install lua5.1 liblua5.1-0-dev lua-filesystem lua-posix lua-filesystem
+        sudo apt-get install lua5.1 liblua5.1-0-dev lua-filesystem lua-posix lua-filesystem tcl
         sudo ln -s /usr/lib/x86_64-linux-gnu/lua/5.1/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.1/posix.so
         # for GitPython, python-hglib
         sudo apt-get install git mercurial
