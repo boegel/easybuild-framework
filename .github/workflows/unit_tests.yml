@@ -43,10 +43,6 @@ jobs:
           fi;
           python -c "import keyring; $SET_KEYRING; keyring.set_password('github_token', 'easybuild_test', '$GITHUB_TOKEN')";
         fi
-        # check GitHub configuration
-        ./eb --check-github --github-user=easybuild_test
-    - name: test 'eb' command
-      run: ./eb --show-system-info
 
     - name: install modules tool
       run: |
@@ -57,13 +53,18 @@ jobs:
           echo $MOD_INIT > mod_init
 
     - name: run test suite
+      env:
+        TEST_EASYBUILD_GITHUB_USER: easybuild_test
+        TEST_EASYBUILD_MODULE_SYNTAX: ${{matrix.module_syntax}}
       run: |
           # initialize environment for modules tool
           source $(cat mod_init); type module
           # make sure 'eb' is available via $PATH, and that $PYTHONPATH is set (some tests expect that)
           export PATH=$PWD:$PATH
           export PYTHONPATH=$PWD
-          # configure EasyBuild
-          export TEST_EASYBUILD_MODULE_SYNTAX=${{matrix.module_syntax}}
+          # gather some useful info on test system
+          eb --show-system-info
+          # check GitHub configuration
+          eb --check-github
           # run test suite
           python -O -m test.framework.suite
