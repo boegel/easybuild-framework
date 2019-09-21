@@ -7,7 +7,7 @@ jobs:
       matrix:
         python: [2.7, 3.5, 3.6, 3.7]
         modules_tool: [Lmod-6.6.3, Lmod-7.8.22, Lmod-8.1.14]
-        module_syntax: [Lua]
+        module_syntax: [Lua, Tcl]
       fail-fast: false
     steps:
     - uses: actions/checkout@v1
