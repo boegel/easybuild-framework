@@ -224,7 +224,7 @@ def template_constant_dict(config, ignore=None, skip_lower=None):
             elif isinstance(dep, (list, tuple)):
                 dep_name, dep_version = dep[0], dep[1]
             else:
-                raise EasyBuildError("Unexpected type for dependency: %s", dep)
+                raise EasyBuildError("Unexpected type for dependency: %s (type: %s)", dep, type(dep))
 
             if isinstance(dep_name, string_type) and dep_name.lower() == name.lower():
                 template_values['%sver' % pref] = dep_version
