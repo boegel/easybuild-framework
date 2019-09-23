@@ -1,3 +1,4 @@
+# documentation: https://help.github.com/en/articles/workflow-syntax-for-github-actions
 name: EasyBuild framework unit tests
 on: [push, pull_request]
 jobs:
@@ -64,6 +65,7 @@ jobs:
           source $INSTALL_DEP ${{matrix.modules_tool}} $HOME
           # changes in environment are not passed to other steps, so need to create a file for $MOD_INIT
           echo $MOD_INIT > mod_init
+          if [ ! -z $MODULESHOME ]; then echo $MODULESHOME > moduleshome; fi
 
     - name: run test suite
       env:
@@ -71,6 +73,7 @@ jobs:
         TEST_EASYBUILD_MODULE_SYNTAX: ${{matrix.module_syntax}}
       run: |
           # initialize environment for modules tool
+          if [ -f moduleshome ]; then export MODULESHOME=$(cat moduleshome); fi
           source $(cat mod_init); type module
           # make sure 'eb' is available via $PATH, and that $PYTHONPATH is set (some tests expect that)
           export PATH=$PWD:$PATH
