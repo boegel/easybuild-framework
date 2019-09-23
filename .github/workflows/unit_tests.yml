@@ -63,8 +63,9 @@ jobs:
           export INSTALL_DEP=$GITHUB_WORKSPACE/easybuild/scripts/install_eb_dep.sh
           # install Lmod
           source $INSTALL_DEP ${{matrix.modules_tool}} $HOME
-          # changes in environment are not passed to other steps, so need to create a file for $MOD_INIT
+          # changes in environment are not passed to other steps, so need to create files...
           echo $MOD_INIT > mod_init
+          echo $PATH > path
           if [ ! -z $MODULESHOME ]; then echo $MODULESHOME > moduleshome; fi
 
     - name: run test suite
@@ -75,8 +76,9 @@ jobs:
           # initialize environment for modules tool
           if [ -f moduleshome ]; then export MODULESHOME=$(cat moduleshome); fi
           source $(cat mod_init); type module
-          # make sure 'eb' is available via $PATH, and that $PYTHONPATH is set (some tests expect that)
-          export PATH=$PWD:$PATH
+          # make sure 'eb' is available via $PATH, and that $PYTHONPATH is set (some tests expect that);
+          # also pick up changes to $PATH set by sourcing $MOD_INIT
+          export PATH=$PWD:$(cat path)
           export PYTHONPATH=$PWD
           # tell EasyBuild which modules tool is available
           if [[ ${{matrix.modules_tool}} =~ ^modules-tcl- ]]; then
