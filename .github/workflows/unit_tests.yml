@@ -75,11 +75,11 @@ jobs:
           export PATH=$PWD:$PATH
           export PYTHONPATH=$PWD
           # tell EasyBuild which modules tool is available
-          if [ ${{matrix.modules_tool}} =~ ^modules-tcl-  ]; then
+          if [[ ${{matrix.modules_tool}} =~ ^modules-tcl- ]]; then
             export TEST_EASYBUILD_MODULES_TOOL=EnvironmentModulesTcl;
-          elif [ ${{matrix.modules_tool}} =~ ^modules-3  ]; then
+          elif [[ ${{matrix.modules_tool}} =~ ^modules-3 ]]; then
             export TEST_EASYBUILD_MODULES_TOOL=EnvironmentModulesC;
-          elif [ ${{matrix.modules_tool}} =~ ^modules-4  ]; then
+          elif [[ ${{matrix.modules_tool}} =~ ^modules-4 ]]; then
             export TEST_EASYBUILD_MODULES_TOOL=EnvironmentModules;
           fi
           # gather some useful info on test system
