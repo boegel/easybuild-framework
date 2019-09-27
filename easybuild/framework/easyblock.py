@@ -2158,6 +2158,7 @@ class EasyBlock(object):
     def fix_shebang(self):
         """Fix shebang lines for specified files."""
         for lang in ['perl', 'python']:
+            shebang_regex = re.compile(r'^#![ ]*.*[/ ]%s.*' % lang)
             fix_shebang_for = self.cfg['fix_%s_shebang_for' % lang]
             if fix_shebang_for:
                 if isinstance(fix_shebang_for, string_type):
@@ -2168,9 +2169,18 @@ class EasyBlock(object):
                     paths = glob.glob(os.path.join(self.installdir, glob_pattern))
                     self.log.info("Fixing '%s' shebang to '%s' for files that match '%s': %s",
                                   lang, shebang, glob_pattern, paths)
-                    regex = r'^#!.*/%s[0-9.]*.*$' % lang
                     for path in paths:
-                        apply_regex_substitutions(path, [(regex, shebang)], backup=False)
+                        # check whether file should be patched by checking whether it has a shebang we want to tweak;
+                        # this also helps to skip binary files we may be hitting
+                        try:
+                            contents = read_file(path, mode='r')
+                            should_patch = shebang_regex.match(contents)
+                        except (TypeError, UnicodeDecodeError):
+                            should_patch = False
+
+                        if should_patch:
+                            contents = shebang_regex.sub(shebang, contents)
+                            write_file(path, contents)
 
     def post_install_step(self):
         """
@@ -3332,7 +3342,13 @@ def inject_checksums(ecs, checksum_type):
     :param ecs: list of EasyConfig instances to inject checksums into corresponding files
     :param checksum_type: type of checksum to use
     """
+    def make_list_lines(values, indent_level):
+        """Make lines for list of values."""
+        line_indent = INDENT_4SPACES * indent_level
+        return [line_indent + "'%s'," % x for x in values]
+
     def make_checksum_lines(checksums, indent_level):
+        """Make lines for list of checksums."""
         line_indent = INDENT_4SPACES * indent_level
         checksum_lines = []
         for fn, checksum in checksums:
@@ -3466,8 +3482,15 @@ def inject_checksums(ecs, checksum_type):
 
                     for key, val in sorted(ext_options.items()):
                         if key != 'checksums' and val != exts_default_options.get(key):
-                            val = quote_str(val, prefer_single_quotes=True)
-                            exts_list_lines.append("%s'%s': %s," % (INDENT_4SPACES * 2, key, val))
+                            strval = quote_str(val, prefer_single_quotes=True)
+                            line = "%s'%s': %s," % (INDENT_4SPACES * 2, key, strval)
+                            # fix long lines for list-type values (e.g. patches)
+                            if isinstance(val, list) and len(val) > 1:
+                                exts_list_lines.append("%s'%s': [" % (INDENT_4SPACES * 2, key))
+                                exts_list_lines.extend(make_list_lines(val, indent_level=3))
+                                exts_list_lines.append(INDENT_4SPACES * 2 + '],',)
+                            else:
+                                exts_list_lines.append(line)
 
                     # if any checksums were collected, inject them for this extension
                     if ext_checksums:
