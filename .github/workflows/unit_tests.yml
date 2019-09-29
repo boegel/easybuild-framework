@@ -136,3 +136,24 @@ jobs:
           # '|| true' is needed to avoid that Travis stops the job on non-zero exit of grep (i.e. when there are no matches)
           PRINTED_MSG=$(egrep -v "${IGNORE_PATTERNS}" test_framework_suite.log | grep '\.\n*[A-Za-z]' || true)
           test "x$PRINTED_MSG" = "x" || (echo "Found printed messages in output of test suite\n${PRINTED_MSG}" && exit 1)
+
+    - name: test bootstrap script
+      # skip when testing with Python 3 for now, bootstrap script is not compatible yet with Python 3
+      if: matrix.python == 2.7
+      run: |
+          # version and SHA256 checksum are hardcoded below to avoid forgetting to update the version in the script along with contents
+          EB_BOOTSTRAP_VERSION=$(grep '^EB_BOOTSTRAP_VERSION' $TRAVIS_BUILD_DIR/easybuild/scripts/bootstrap_eb.py | sed 's/[^0-9.]//g')
+          EB_BOOTSTRAP_SHA256SUM=$(sha256sum $TRAVIS_BUILD_DIR/easybuild/scripts/bootstrap_eb.py | cut -f1 -d' ')
+          EB_BOOTSTRAP_FOUND="$EB_BOOTSTRAP_VERSION $EB_BOOTSTRAP_SHA256SUM"
+          EB_BOOTSTRAP_EXPECTED="20190922.01 778762479d77df641c247aba33c13203c8c5b8275e47f59464bab93917aaaf22"
+          test "$EB_BOOTSTRAP_FOUND" = "$EB_BOOTSTRAP_EXPECTED" || (echo "Version check on bootstrap script failed $EB_BOOTSTRAP_FOUND" && exit 1)
+
+          # test bootstrap script
+          export PREFIX=/tmp/$USER/$GITHUB_SHA/eb_bootstrap
+          python easybuild/scripts/bootstrap_eb.py $PREFIX
+          # unset $PYTHONPATH to avoid mixing two EasyBuild 'installations' when testing bootstrapped EasyBuild module
+          unset PYTHONPATH
+          # simply sanity check on bootstrapped EasyBuild module (skip when testing with Python 3, for now)
+          module use $PREFIX/modules/all
+          module load EasyBuild
+          eb --version
