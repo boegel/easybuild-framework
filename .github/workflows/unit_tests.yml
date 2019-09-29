@@ -68,8 +68,17 @@ jobs:
           echo $PATH > path
           if [ ! -z $MODULESHOME ]; then echo $MODULESHOME > moduleshome; fi
 
+    - name: install sources
+      run: |
+          # install from source distribution tarball, to test release as published on PyPI
+          python setup.py sdist
+          ls dist
+          export PREFIX=/tmp/$USER/$GITHUB_SHA
+          pip install --prefix $PREFIX dist/easybuild-framework*tar.gz
+
     - name: run test suite
       env:
+        EB_VERBOSE: 1
         EASYBUILD_MODULE_SYNTAX: ${{matrix.module_syntax}}
         TEST_EASYBUILD_MODULE_SYNTAX: ${{matrix.module_syntax}}
       run: |
@@ -78,8 +87,10 @@ jobs:
           source $(cat mod_init); type module
           # make sure 'eb' is available via $PATH, and that $PYTHONPATH is set (some tests expect that);
           # also pick up changes to $PATH set by sourcing $MOD_INIT
-          export PATH=$PWD:$(cat path)
-          export PYTHONPATH=$PWD
+          export PREFIX=/tmp/$USER/$GITHUB_SHA
+          export PATH=$PREFIX/bin:$(cat path)
+          export PYTHONPATH=$PREFIX/lib/python${{matrix.python}}/site-packages:$PYTHONPATH
+          eb --version
           # tell EasyBuild which modules tool is available
           if [[ ${{matrix.modules_tool}} =~ ^modules-tcl- ]]; then
             export EASYBUILD_MODULES_TOOL=EnvironmentModulesTcl
