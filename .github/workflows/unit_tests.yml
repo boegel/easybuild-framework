@@ -75,6 +75,8 @@ jobs:
 
     - name: install modules tool
       run: |
+          # avoid downloading modules tool sources into easybuild-framework dir
+          cd $HOME
           export INSTALL_DEP=$GITHUB_WORKSPACE/easybuild/scripts/install_eb_dep.sh
           # install Lmod
           source $INSTALL_DEP ${{matrix.modules_tool}} $HOME
@@ -105,12 +107,12 @@ jobs:
         TEST_EASYBUILD_MODULE_SYNTAX: ${{matrix.module_syntax}}
       run: |
           # initialize environment for modules tool
-          if [ -f moduleshome ]; then export MODULESHOME=$(cat moduleshome); fi
-          source $(cat mod_init); type module
+          if [ -f $HOME/moduleshome ]; then export MODULESHOME=$(cat $HOME/moduleshome); fi
+          source $(cat $HOME/mod_init); type module
           # make sure 'eb' is available via $PATH, and that $PYTHONPATH is set (some tests expect that);
           # also pick up changes to $PATH set by sourcing $MOD_INIT
           export PREFIX=/tmp/$USER/$GITHUB_SHA
-          export PATH=$PREFIX/bin:$(cat path)
+          export PATH=$PREFIX/bin:$(cat $HOME/path)
           export PYTHONPATH=$PREFIX/lib/python${{matrix.python}}/site-packages:$PYTHONPATH
           eb --version
           # tell EasyBuild which modules tool is available
