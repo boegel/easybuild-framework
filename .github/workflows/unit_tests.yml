@@ -54,6 +54,8 @@ jobs:
         pip --version
         pip install --upgrade pip
         pip --version
+        pwd
+        ls
         pip install -r requirements.txt
         # git config is required to make actual git commits (cfr. tests for GitRepository)
         git config --global user.name "Travis CI"
