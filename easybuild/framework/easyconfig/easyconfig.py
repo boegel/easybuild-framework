@@ -1482,7 +1482,7 @@ class EasyConfig(object):
 
         return value
 
-    def get_ref(self, key):
+    def get_ref(self, key, default=None):
         """
         Obtain reference to original/untemplated value of specified easyconfig parameter
         rather than a copied value with templated values.
@@ -1493,7 +1493,7 @@ class EasyConfig(object):
         prev_enable_templating = self.enable_templating
         self.enable_templating = False
 
-        ref = self[key]
+        ref = self.get(key, default)
 
         # restore previous value for 'enable_templating'
         self.enable_templating = prev_enable_templating

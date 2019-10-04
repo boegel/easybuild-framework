@@ -2737,6 +2737,11 @@ class EasyConfigTest(EnhancedTestCase):
         self.assertEqual(descr_ref, "Toy C program, 100% %(name)s.")
         self.assertTrue(descr_ref is ec._config['description'][0])
 
+        # test specifying of default value
+        self.assertEqual(ec.get_ref('nosuchparam'), None)
+        self.assertEqual(ec.get_ref('nosuchparam', default='test123'), 'test123')
+        self.assertEqual(ec.get_ref('nosuchparam', 'testagain'), 'testagain')
+
     def test_multi_deps(self):
         """Test handling of multi_deps easyconfig parameter."""
         test_ecs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'easyconfigs', 'test_ecs')
