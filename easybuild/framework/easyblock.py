@@ -465,7 +465,7 @@ class EasyBlock(object):
         exts_sources = []
         exts_list = self.cfg.get_ref('exts_list')
 
-        if self.dry_run:
+        if exts_list and self.dry_run:
             self.dry_run_msg("\nList of sources/patches for extensions:")
 
         for ext in exts_list:
@@ -1749,8 +1749,7 @@ class EasyBlock(object):
                 trace_msg(msg)
 
         # fetch extensions
-        if self.cfg['exts_list']:
-            self.exts = self.fetch_extension_sources(skip_checksums=skip_checksums)
+        self.exts = self.fetch_extension_sources(skip_checksums=skip_checksums)
 
         # create parent dirs in install and modules path already
         # this is required when building in parallel
