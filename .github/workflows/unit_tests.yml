@@ -133,7 +133,7 @@ jobs:
           # check GitHub configuration
           eb --check-github --github-user=easybuild_test
           # run test suite
-          python -O -m test.framework.suite 2>&1 | tee test_framework_suite.log
+          python -O -m cProfile -s cumtime test/framework/suite.py 2>&1 | tee test_framework_suite.log
           # try and make sure output of running tests is clean (no printed messages/warnings)
           IGNORE_PATTERNS="no GitHub token available|skipping SvnRepository test|requires Lmod as modules tool|stty: 'standard input': Inappropriate ioctl for device"
           # '|| true' is needed to avoid that Travis stops the job on non-zero exit of grep (i.e. when there are no matches)
