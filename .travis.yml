@@ -12,7 +12,7 @@ env:
     - LMOD_VERSION=8.0.9 TEST_EASYBUILD_MODULE_SYNTAX=Tcl
     - ENV_MOD_VERSION=3.2.10 TEST_EASYBUILD_MODULES_TOOL=EnvironmentModulesC TEST_EASYBUILD_MODULE_SYNTAX=Tcl
     - ENV_MOD_TCL_VERSION=1.147 TEST_EASYBUILD_MODULES_TOOL=EnvironmentModulesTcl TEST_EASYBUILD_MODULE_SYNTAX=Tcl
-    - ENV_MOD_VERSION=4.1.4 TEST_EASYBUILD_MODULE_SYNTAX=Tcl TEST_EASYBUILD_MODULES_TOOL=EnvironmentModules  # Tmod 4.1.4 is used in RHEL8
+    - ENV_MOD_VERSION=4.2.3 TEST_EASYBUILD_MODULE_SYNTAX=Tcl TEST_EASYBUILD_MODULES_TOOL=EnvironmentModules
 cache:
   pip: true
 matrix:
@@ -49,7 +49,7 @@ matrix:
       env: ENV_MOD_TCL_VERSION=1.147 TEST_EASYBUILD_MODULES_TOOL=EnvironmentModulesTcl TEST_EASYBUILD_MODULE_SYNTAX=Tcl
       dist: xenial
     - python: 3.6
-      env: ENV_MOD_VERSION=4.1.4 TEST_EASYBUILD_MODULE_SYNTAX=Tcl TEST_EASYBUILD_MODULES_TOOL=EnvironmentModules  # Tmod 4.1.4 is used in RHEL8
+      env: ENV_MOD_VERSION=4.2.3 TEST_EASYBUILD_MODULE_SYNTAX=Tcl TEST_EASYBUILD_MODULES_TOOL=EnvironmentModules
       dist: xenial
     # also test most common configuration with Python 3.5 and 3.7
     - python: 3.5
