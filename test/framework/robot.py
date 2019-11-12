@@ -1473,6 +1473,42 @@ class RobotTest(EnhancedTestCase):
         expected = os.path.join(test_ecs, '__archive__', 'i', 'intel', 'intel-2012a.eb')
         self.assertTrue(os.path.samefile(res[0]['spec'], expected))
 
+    def test_resolve_dependencies_forced(self):
+        """Test resolve_dependencies in combination with --force."""
+
+        test_ecs = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'easyconfigs', 'test_ecs')
+        cuda = os.path.join(test_ecs, 'c', 'CUDA', 'CUDA-9.1.85-GCC-6.4.0-2.28.eb')
+        fosscuda = os.path.join(test_ecs, 'f', 'fosscuda', 'fosscuda-2018a.eb')
+        gompic = os.path.join(test_ecs, 'g', 'gompic', 'gompic-2018a.eb')
+        gcccuda = os.path.join(test_ecs, 'g', 'gcccuda', 'gcccuda-2018a.eb')
+
+        init_config(build_options={
+            'robot_path': [test_ecs],
+            'validate': False,
+        })
+        ecs, _ = parse_easyconfigs([(x, False) for x in [cuda, fosscuda, gompic, gcccuda]])
+
+        ordered_ecs = resolve_dependencies(ecs, self.modtool)
+
+        # put fake modules in place for easyconfigs + all dependencies
+        modules_dir = os.path.join(self.test_prefix, 'modules')
+        for ec in ordered_ecs:
+            write_file(os.path.join(modules_dir, ec['full_mod_name']), '#%Module')
+
+        self.modtool.use(modules_dir)
+
+        # by default, ordering is correct (easyconfigs being installed are filtered from available modules
+        ordered_ecs = resolve_dependencies(ecs, self.modtool)
+        expected = ['CUDA/9.1.85-GCC-6.4.0-2.28', 'gcccuda/2018a', 'gompic/2018a', 'fosscuda/2018a']
+        print([ec['full_mod_name'] for ec in ordered_ecs])
+        # FIXME this fails because order is sort of unexpected
+        # obtained order is CUDA, fosscuda, gompic, gcccuda
+        # (which is partially determined by order in which easyconfigs were listed)
+        # since fosscuda doesn't actually depend on gcccuda or gompic, it's considered ready to install as soon
+        # as CUDA is reinstalled, but gcccuda and gompic should actually be installed first
+        self.assertEqual([ec['full_mod_name'] for ec in ordered_ecs], expected)
+
+
 
 def suite():
     """ returns all the testcases in this module """
