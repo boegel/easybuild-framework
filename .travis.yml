@@ -25,6 +25,8 @@ addons:
       - time
         # for building cffi from source (required by pycparser->paramiko->GC3Pie), on ppc64le
       - libffi-dev
+      # rsync is required for building Lmod from source
+      - rsync
 before_install:
     - pip --version
     - pip install --upgrade pip
