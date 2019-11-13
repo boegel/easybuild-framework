@@ -23,6 +23,8 @@ addons:
       - mercurial
       # for GC3Pie (optional dep for EasyBuild)
       - time
+        # for building cffi from source (required by pycparser->paramiko->GC3Pie), on ppc64le
+      - libffi-dev
 before_install:
     - pip --version
     - pip install --upgrade pip
