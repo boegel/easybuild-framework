@@ -18,6 +18,7 @@ addons:
     packages:
       # for environment modules/Lmod
       - tcl8.5
+      - tcl
       # for GitPython, python-hglib
       - git
       - mercurial
