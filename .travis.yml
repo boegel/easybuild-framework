@@ -68,13 +68,13 @@ script:
     - if [ ! -z $TEST_EASYBUILD_MODULES_TOOL ]; then export EASYBUILD_MODULES_TOOL=$TEST_EASYBUILD_MODULES_TOOL; fi
     - if [ ! -z $TEST_EASYBUILD_MODULE_SYNTAX ]; then export EASYBUILD_MODULE_SYNTAX=$TEST_EASYBUILD_MODULE_SYNTAX; fi
     # create 'source distribution' tarball, like we do when publishing a release to PyPI
-    - cd $TRAVIS_BUILD_DIR; python setup.py sdist
+    - cd $TRAVIS_BUILD_DIR; python setup.py sdist > sdist.out
     - ls -l $TRAVIS_BUILD_DIR/dist/
     # set up environment for EasyBuild framework tests
     - export PATH=/tmp/$TRAVIS_JOB_ID/bin:$PATH
     - export PYTHONPATH=/tmp/$TRAVIS_JOB_ID/lib/python$TRAVIS_PYTHON_VERSION/site-packages
     # install easybuild-framework to unique temporary location using prepared sdist tarball
-    - mkdir -p $PYTHONPATH; easy_install --prefix /tmp/$TRAVIS_JOB_ID $TRAVIS_BUILD_DIR/dist/easybuild-framework*tar.gz
+    - mkdir -p $PYTHONPATH; easy_install --prefix /tmp/$TRAVIS_JOB_ID $TRAVIS_BUILD_DIR/dist/easybuild-framework*tar.gz > install.out
     # make sure there are no (top-level) "import setuptools" or "import pkg_resources" statements,
     # since EasyBuild should not have a runtime requirement on setuptools
     - SETUPTOOLS_IMPORTS=$(egrep -RI '^(from|import)[ ]*pkg_resources|^(from|import)[ ]*setuptools' easybuild/ || true)
