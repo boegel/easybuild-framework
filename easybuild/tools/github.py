@@ -1814,6 +1814,8 @@ def fetch_github_token(user):
 
     token, msg = None, None
 
+    print("[fetch_github_token] user: %s" % user)
+
     if user is None:
         msg = "No GitHub user name provided, required for fetching GitHub token."
     elif not HAVE_KEYRING:
@@ -1822,6 +1824,8 @@ def fetch_github_token(user):
     else:
         try:
             token = keyring.get_password(KEYRING_GITHUB_TOKEN, user)
+
+            print("[fetch_github_token] %s" % (token or '')[:5])
         except Exception as err:
             _log.warning("Exception occurred when fetching GitHub token: %s", err)
 

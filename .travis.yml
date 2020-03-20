@@ -59,10 +59,12 @@ script:
     - if [ ! -z $MOD_INIT ]; then source $MOD_INIT; type module; fi
     # install GitHub token
     - if [ ! -z $GITHUB_TOKEN ]; then
+        echo "\$GITHUB_TOKEN is defined, adding it to keyring...";
         if [ "x$TRAVIS_PYTHON_VERSION" == 'x2.6' ];
             then SET_KEYRING="keyring.set_keyring(keyring.backends.file.PlaintextKeyring())";
             else SET_KEYRING="import keyrings; keyring.set_keyring(keyrings.alt.file.PlaintextKeyring())";
         fi;
+        echo "python -c \"import keyring; $SET_KEYRING; keyring.set_password('github_token', 'easybuild_test', '$GITHUB_TOKEN')\"";
         python -c "import keyring; $SET_KEYRING; keyring.set_password('github_token', 'easybuild_test', '$GITHUB_TOKEN')";
       fi
     - if [ ! -z $TEST_EASYBUILD_MODULES_TOOL ]; then export EASYBUILD_MODULES_TOOL=$TEST_EASYBUILD_MODULES_TOOL; fi
@@ -91,9 +93,10 @@ script:
     - sudo touch /tmp/file_to_overwrite_for_easybuild_test_copy_file.txt
     - sudo chmod o+w /tmp/file_to_overwrite_for_easybuild_test_copy_file.txt
     # run coverage on all travis builds except for Python 2.6
-    - if [ "x$TRAVIS_PYTHON_VERSION" != 'x2.6' ]; then coverage run -m test.framework.suite 2>&1 | tee test_framework_suite.log; coverage report -m --ignore-errors; fi  
+    - if [ "x$TRAVIS_PYTHON_VERSION" != 'x2.6' ]; then coverage run -m test.framework.suite from_pr 2>&1 | tee test_framework_suite.log; coverage report -m --ignore-errors; fi  
     # invoke the regression test for Python 2.6 the original way without coverage
-    - if [ "x$TRAVIS_PYTHON_VERSION" == 'x2.6' ]; then python -O -m test.framework.suite 2>&1 | tee test_framework_suite.log; fi
+    ###- if [ "x$TRAVIS_PYTHON_VERSION" == 'x2.6' ]; then python -O -m test.framework.suite 2>&1 | tee test_framework_suite.log; fi
+    - if [ "x$TRAVIS_PYTHON_VERSION" == 'x2.6' ]; then python -O -m test.framework.options from_pr 2>&1 | tee test_framework_suite.log; fi
     # try and make sure output of running tests is clean (no printed messages/warnings)
     - IGNORE_PATTERNS="no GitHub token available|skipping SvnRepository test|lib/python2.6/site-packages|requires Lmod as modules tool"
     # '|| true' is needed to avoid that Travis stops the job on non-zero exit of grep (i.e. when there are no matches)
