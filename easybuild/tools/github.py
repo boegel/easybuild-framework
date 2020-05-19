@@ -1398,7 +1398,7 @@ def add_pr_labels(pr, branch='develop'):
             missing_labels.append(label)
 
     if missing_labels:
-        missing_labels_txt = ', '.join(["'%s'" % l for l in missing_labels])
+        missing_labels_txt = ', '.join(["'%s'" % label for label in missing_labels])
         print_msg("PR #%s should be labelled %s" % (pr, missing_labels_txt), log=_log, prefix=False)
         if not post_pr_labels(pr, missing_labels):
             print_msg("Could not add labels %s to PR #%s" % (missing_labels_txt, pr), log=_log, prefix=False)
