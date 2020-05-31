@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         python: [2.7, 3.5, 3.6, 3.7, 3.8]
-        modules_tool: [Lmod-7.8.22, Lmod-8.2.9, modules-tcl-1.147, modules-3.2.10, modules-4.1.4]
+        modules_tool: [Lmod-7.8.22, Lmod-8.2.9, modules-tcl-1.147, modules-3.2.10, modules-4.1.4, modules-4.5.0]
         module_syntax: [Lua, Tcl]
         # exclude some configuration for non-Lmod modules tool:
         # - don't test with Lua module syntax (only supported in Lmod)
@@ -36,6 +36,12 @@ jobs:
           - modules_tool: modules-4.1.4
             python: 3.7
           - modules_tool: modules-4.1.4
+            python: 3.8
+          - modules_tool: modules-4.5.0
+            python: 3.5
+          - modules_tool: modules-4.5.0
+            python: 3.7
+          - modules_tool: modules-4.5.0
             python: 3.8
       fail-fast: false
     steps:
@@ -90,6 +96,8 @@ jobs:
           export INSTALL_DEP=$GITHUB_WORKSPACE/easybuild/scripts/install_eb_dep.sh
           # install Lmod
           source $INSTALL_DEP ${{matrix.modules_tool}} $HOME
+          source $MOD_INIT
+          module --version
           # changes in environment are not passed to other steps, so need to create files...
           echo $MOD_INIT > mod_init
           echo $PATH > path
