@@ -56,11 +56,11 @@ import time
 import zlib
 
 from easybuild.base import fancylogger
-from easybuild.tools import run
 # import build_log must stay, to use of EasyBuildLog
 from easybuild.tools.build_log import EasyBuildError, dry_run_msg, print_msg, print_warning
 from easybuild.tools.config import DEFAULT_WAIT_ON_LOCK_INTERVAL, GENERIC_EASYBLOCK_PKG, build_option, install_path
 from easybuild.tools.py2vs3 import HTMLParser, std_urllib, string_type
+from easybuild.tools.run import run_cmd
 from easybuild.tools.utilities import nub, remove_unwanted_chars
 
 try:
@@ -417,7 +417,7 @@ def extract_file(fn, dest, cmd=None, extra_options=None, overwrite=False, forced
     if extra_options:
         cmd = "%s %s" % (cmd, extra_options)
 
-    run.run_cmd(cmd, simple=True, force_in_dry_run=forced)
+    run_cmd(cmd, simple=True, force_in_dry_run=forced)
 
     # note: find_base_dir also changes into the base dir!
     base_dir = find_base_dir()
@@ -1267,7 +1267,7 @@ def apply_patch(patch_file, dest, fn=None, copy=False, level=None, use_git_am=Fa
     else:
         patch_cmd = "patch -b -p%s -i %s" % (level, apatch)
 
-    out, ec = run.run_cmd(patch_cmd, simple=False, path=adest, log_ok=False, trace=False)
+    out, ec = run_cmd(patch_cmd, simple=False, path=adest, log_ok=False, trace=False)
 
     if ec:
         raise EasyBuildError("Couldn't apply patch file %s. Process exited with code %s: %s", patch_file, ec, out)
@@ -1770,7 +1770,7 @@ def move_logs(src_logfile, target_logfile):
             _log.info("Moved log file %s to %s" % (src_logfile, new_log_path))
 
             if zip_log_cmd:
-                run.run_cmd("%s %s" % (zip_log_cmd, new_log_path))
+                run_cmd("%s %s" % (zip_log_cmd, new_log_path))
                 _log.info("Zipped log %s using '%s'", new_log_path, zip_log_cmd)
 
     except (IOError, OSError) as err:
@@ -1859,16 +1859,6 @@ def decode_class_name(name):
     else:
         name = name[len(EASYBLOCK_CLASS_PREFIX):]
         return decode_string(name)
-
-
-def run_cmd(cmd, log_ok=True, log_all=False, simple=False, inp=None, regexp=True, log_output=False, path=None):
-    """NO LONGER SUPPORTED: use run_cmd from easybuild.tools.run instead"""
-    _log.nosupport("run_cmd was moved from easybuild.tools.filetools to easybuild.tools.run", '2.0')
-
-
-def run_cmd_qa(cmd, qa, no_qa=None, log_ok=True, log_all=False, simple=False, regexp=True, std_qa=None, path=None):
-    """NO LONGER SUPPORTED: use run_cmd_qa from easybuild.tools.run instead"""
-    _log.nosupport("run_cmd_qa was moved from easybuild.tools.filetools to easybuild.tools.run", '2.0')
 
 
 def parse_log_for_error(txt, regExp=None, stdout=True, msg=None):
@@ -2180,7 +2170,7 @@ def get_source_tarball_from_git(filename, targetdir, git_config):
 
     tmpdir = tempfile.mkdtemp()
     cwd = change_dir(tmpdir)
-    run.run_cmd(' '.join(clone_cmd), log_all=True, log_ok=False, simple=False, regexp=False)
+    run_cmd(' '.join(clone_cmd), log_all=True, log_ok=False, simple=False, regexp=False)
 
     # if a specific commit is asked for, check it out
     if commit:
@@ -2188,14 +2178,14 @@ def get_source_tarball_from_git(filename, targetdir, git_config):
         if recursive:
             checkout_cmd.extend(['&&', 'git', 'submodule', 'update'])
 
-        run.run_cmd(' '.join(checkout_cmd), log_all=True, log_ok=False, simple=False, regexp=False, path=repo_name)
+        run_cmd(' '.join(checkout_cmd), log_all=True, log_ok=False, simple=False, regexp=False, path=repo_name)
 
     # create an archive and delete the git repo directory
     if keep_git_dir:
         tar_cmd = ['tar', 'cfvz', targetpath, repo_name]
     else:
         tar_cmd = ['tar', 'cfvz', targetpath, '--exclude', '.git', repo_name]
-    run.run_cmd(' '.join(tar_cmd), log_all=True, log_ok=False, simple=False, regexp=False)
+    run_cmd(' '.join(tar_cmd), log_all=True, log_ok=False, simple=False, regexp=False)
 
     # cleanup (repo_name dir does not exist in dry run mode)
     change_dir(cwd)
