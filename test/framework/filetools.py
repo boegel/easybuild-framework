@@ -2630,6 +2630,53 @@ class FileToolsTest(EnhancedTestCase):
         self.assertFalse(os.path.exists(lock_path))
         self.assertEqual(os.listdir(locks_dir), [])
 
+    def test_find_pip_cmd(self):
+        """Test find_pip_cmd."""
+        # finding a pip command for Python 0.0 shouldn't be possible, so should result in None
+        self.assertEqual(ft.find_pip_cmd(0, 0), None)
+        self.assertEqual(ft.find_pip_cmd('0', 0), None)
+        self.assertEqual(ft.find_pip_cmd(0, '0'), None)
+        self.assertEqual(ft.find_pip_cmd('0', '0'), None)
+
+        # install fake pip commands for the purpose of this test
+
+        # pip command for Python 2
+        fake_pip_path = os.path.join(self.test_prefix, 'pip')
+        fake_pip = "#!/bin/bash\necho 'pip 1.2.3 from %s (python 2.7)'\n" % fake_pip_path
+        ft.write_file(fake_pip_path, fake_pip)
+
+        # pip command for Python 3.6
+        fake_pip3_path = os.path.join(self.test_prefix, 'pip3')
+        ft.write_file(fake_pip3_path, fake_pip.replace('python 2.7', 'python 3.6'))
+
+        # pip command for Python 3.7
+        fake_pip37_path = os.path.join(self.test_prefix, 'pip3.7')
+        ft.write_file(fake_pip37_path, fake_pip.replace('python 2.7', 'python 3.7'))
+
+        for path in [fake_pip_path, fake_pip3_path, fake_pip37_path]:
+            ft.adjust_permissions(path, stat.S_IRUSR | stat.S_IXUSR)
+        os.environ['PATH'] = self.test_prefix + ':' + os.environ['PATH']
+
+        self.assertEqual(ft.find_pip_cmd(0, 0), None)
+        self.assertEqual(ft.find_pip_cmd(123, 456), None)
+
+        self.assertEqual(ft.find_pip_cmd(2, 7), fake_pip_path)
+        self.assertEqual(ft.find_pip_cmd('2', 7), fake_pip_path)
+        self.assertEqual(ft.find_pip_cmd(2, '7'), fake_pip_path)
+        self.assertEqual(ft.find_pip_cmd('2', '7'), fake_pip_path)
+
+        # 'pip' is skipped since that's for Python 2.7, but 'pip3' command is found
+        self.assertEqual(ft.find_pip_cmd(3, 6), fake_pip3_path)
+        self.assertEqual(ft.find_pip_cmd('3', 6), fake_pip3_path)
+        self.assertEqual(ft.find_pip_cmd(3, '6'), fake_pip3_path)
+        self.assertEqual(ft.find_pip_cmd('3', '6'), fake_pip3_path)
+
+        # 'pip' and 'pip3' are skipped (latter is for Python 3.6), but 'pip3.7' command is found
+        self.assertEqual(ft.find_pip_cmd(3, 7), fake_pip37_path)
+        self.assertEqual(ft.find_pip_cmd('3', 7), fake_pip37_path)
+        self.assertEqual(ft.find_pip_cmd(3, '7'), fake_pip37_path)
+        self.assertEqual(ft.find_pip_cmd('3', '7'), fake_pip37_path)
+
 
 def suite():
     """ returns all the testcases in this module """

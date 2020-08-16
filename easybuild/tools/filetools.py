@@ -2359,3 +2359,49 @@ def copy_framework_files(paths, target_dir):
             raise EasyBuildError("Couldn't find parent folder of updated file: %s", path)
 
     return file_info
+
+
+def find_pip_cmd(pyver_maj, pyver_min):
+    """
+    Find suitable pip command for specified Python version.
+
+    :param pyver_maj: Python major version number
+    :param pyver_maj: Python minor version number
+    :return: path to suitable pip command, or None is none was found
+    """
+    # Python major/minor version can be specified as int value, but we assume string values below
+    if isinstance(pyver_maj, int):
+        pyver_maj = str(pyver_maj)
+    if isinstance(pyver_min, int):
+        pyver_min = str(pyver_min)
+
+    # consider different variants: 'pip', 'pip3', 'pip-3', 'pip3.6', 'pip-3.6'
+    pip_cand_cmds = [
+        'pip',
+        'pip%s' % pyver_maj,
+        'pip-%s' % pyver_maj,
+        'pip%s.%s' % (pyver_maj, pyver_min),
+        'pip-%s.%s' % (pyver_maj, pyver_min),
+    ]
+
+    pip_cmd = None
+
+    pyver_maj_min_str = '%s.%s' % (pyver_maj, pyver_min)
+    pip_pyver_regex = re.compile(r'\(python (?P<pyver>[0-9.]+)\)')
+    for cmd in pip_cand_cmds:
+        cmd_path = which(cmd)
+        if cmd_path:
+            out, _ = run_cmd("%s --version" % cmd_path)
+            pip_pyver = pip_pyver_regex.search(out)
+            if pip_pyver:
+                pip_pyver_maj_min = pip_pyver.group('pyver').split('.')
+                if pip_pyver_maj_min == [pyver_maj, pyver_min]:
+                    pip_cmd = cmd_path
+                    _log.info("Found suitable pip command for Python %s: %s", pyver_maj_min_str, pip_cmd)
+                    break
+                else:
+                    _log.debug("pip command %s not suited for Python %s", cmd, pyver_maj_min_str)
+            else:
+                print_warning("Failed to determine Python version for pip command %s?!" % pip_cmd)
+
+    return pip_cmd
