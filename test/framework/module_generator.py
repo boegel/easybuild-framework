@@ -652,7 +652,7 @@ class ModuleGeneratorTest(EnhancedTestCase):
         # this is known to fail with the ancient Tcl-only implementation of environment modules,
         # but that's considered to be a non-issue (since this is mostly relevant for Cray systems,
         # which are either using EnvironmentModulesC (3.2.10), EnvironmentModules (4.x) or Lmod...
-        if self.MODULE_GENERATOR_CLASS == ModuleGeneratorTcl and if self.modtool.__class__ != EnvironmentModulesTcl:
+        if self.MODULE_GENERATOR_CLASS == ModuleGeneratorTcl and self.modtool.__class__ != EnvironmentModulesTcl:
             test_mod_txt = "#%Module\nmodule swap GCC/7.3.0-2.30"
 
             test_mod_fn = 'test_single_arg_swap/1.2.3'
