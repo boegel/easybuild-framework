@@ -32,11 +32,11 @@ from distutils.version import LooseVersion
 import re
 
 from easybuild.toolchains.iccifort import IccIfort
-from easybuild.toolchains.intel_compilers import IntelCompilers
+from easybuild.toolchains.intel_compilers import IntelCompilersToolchain
 from easybuild.toolchains.mpi.intelmpi import IntelMPI
 
 
-class Iimpi(IntelCompilers, IccIfort, IntelMPI):
+class Iimpi(IccIfort, IntelMPI):
     """
     Compiler toolchain with Intel compilers (icc/ifort), Intel MPI.
     """
@@ -55,12 +55,12 @@ class Iimpi(IntelCompilers, IccIfort, IntelMPI):
             # 'a' is assumed to be equivalent with '.01' (January), and 'b' with '.07' (June)
             # (good enough for this purpose)
             self.iimpi_ver = LooseVersion(self.version.replace('a', '.01').replace('b', '.07'))
+
+            # initialize with intel-compilers subcomponent
             if self.iimpi_ver >= LooseVersion('2020.12'):
-                self.SUBTOOLCHAIN = IntelCompilers.NAME
-                self.COMPILER_MODULE_NAME = IntelCompilers.COMPILER_MODULE_NAME
-            else:
-                self.SUBTOOLCHAIN = IccIfort.NAME
-                self.COMPILER_MODULE_NAME = IccIfort.COMPILER_MODULE_NAME
+                IntelCompilersToolchain.__init__(self, *args, **kwargs)
+                self.SUBTOOLCHAIN = IntelCompilersToolchain.SUBTOOLCHAIN
+                self.COMPILER_MODULE_NAME = IntelCompilersToolchain.COMPILER_MODULE_NAME
         else:
             self.iimpi_ver = self.version
 
@@ -79,12 +79,3 @@ class Iimpi(IntelCompilers, IccIfort, IntelMPI):
                 deprecated = True
 
         return deprecated
-
-    def is_dep_in_toolchain_module(self, *args, **kwargs):
-        """Check whether a specific software name is listed as a dependency in the module for this toolchain."""
-        if re.match('^[0-9]', str(self.iimpi_ver)) and self.iimpi_ver < LooseVersion('2020.12'):
-            res = IccIfort.is_dep_in_toolchain_module(self, *args, **kwargs)
-        else:
-            res = super(Iimpi, self).is_dep_in_toolchain_module(*args, **kwargs)
-
-        return res
