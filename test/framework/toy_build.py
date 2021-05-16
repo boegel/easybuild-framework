@@ -3335,7 +3335,7 @@ class ToyBuildTest(EnhancedTestCase):
         error_msg = "Check for banned/required shared libraries failed for"
 
         # default check is done via EB_libtoy easyblock, which specifies several banned/required libraries
-        self.test_toy_build(ec_file=libtoy_ec, raise_error=True, verbose=False, verify=False)
+        self.test_toy_build(ec_file=libtoy_ec, raise_error=True, verbose=False, verify=False, extra_args=['-l', '-d'])
         remove_file(libtoy_modfile_path)
 
         # we can make the check fail by defining environment variables picked up by the EB_libtoy easyblock
