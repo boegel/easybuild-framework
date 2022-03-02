@@ -16,6 +16,7 @@ jobs:
       fail-fast: false
     container:
       image: ghcr.io/easybuilders/${{ matrix.container }}
+      options: --user easybuild
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -45,10 +46,8 @@ jobs:
               . /etc/profile.d/*lmod*.sh
           fi
 
-          # tests are run with root privileges, so we need to tell EasyBuild that's OK...
-          export EASYBUILD_ALLOW_USE_AS_ROOT_AND_ACCEPT_CONSEQUENCES=1
-
           cmds=(
+            "whoami"
             "env | sort"
             "eb --version"
             "eb --show-system-info"
