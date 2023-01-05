@@ -73,6 +73,11 @@ jobs:
             modules_tool: ${{needs.setup.outputs.lmod8}}
             module_syntax: Lua
             lc_all: C
+          # Also run tests with Python 2 with $LC_ALL set to C, to try and catch encoding errors
+          - python: 2.7
+            modules_tool: ${{needs.setup.outputs.lmod8}}
+            module_syntax: Lua
+            lc_all: C
       fail-fast: false
     steps:
     - uses: actions/checkout@v3
@@ -200,6 +205,10 @@ jobs:
           if [ "${{matrix.python}}" == '2.7' ]; then
             export TEST_EASYBUILD_SILENCE_DEPRECATION_WARNINGS=python2
           fi
+          echo "default encoding:"
+          python -c 'import sys; print(sys.getdefaultencoding())'
+          echo 'env | sort =>'
+          env | sort
           # run test suite
           python -O -m test.framework.suite 2>&1 | tee test_framework_suite.log
           # try and make sure output of running tests is clean (no printed messages/warnings)
