@@ -33,6 +33,7 @@ jobs:
           - ${{needs.setup.outputs.modules4}}
         module_syntax: [Lua, Tcl]
         lc_all: [""]
+        lang: [""]
         # don't test with Lua module syntax (only supported in Lmod)
         exclude:
           - modules_tool: ${{needs.setup.outputs.modulesTcl}}
@@ -78,6 +79,7 @@ jobs:
             modules_tool: ${{needs.setup.outputs.lmod8}}
             module_syntax: Lua
             lc_all: C
+            lang: C
       fail-fast: false
     steps:
     - uses: actions/checkout@v3
@@ -170,6 +172,11 @@ jobs:
         TEST_EASYBUILD_MODULE_SYNTAX: ${{matrix.module_syntax}}
         LC_ALL: ${{matrix.lc_all}}
       run: |
+          # if a value for $LANG is specified, use it
+          if [ "${{matrix.lang}}" != "" ]; then
+              export LANG="${{matrix.lang}}"
+              echo "using LANG=$LANG"
+          fi
           # run tests *outside* of checked out easybuild-framework directory,
           # to ensure we're testing installed version (see previous step)
           cd $HOME
