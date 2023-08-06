@@ -178,7 +178,7 @@ def run(cmd, fail_on_error=True, split_stderr=False, stdin=None,
         stdin = stdin.encode()
 
     # use bash as shell instead of the default /bin/sh used by subprocess.run
-    # (which could be dash instead of bash, like on Ubuntu)
+    # (which could be dash instead of bash, like on Ubuntu, see https://wiki.ubuntu.com/DashAsBinSh)
     if shell:
         executable = '/bin/bash'
     else:
