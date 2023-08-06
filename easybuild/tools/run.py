@@ -155,7 +155,7 @@ def run(cmd, fail_on_error=True, split_stderr=False, stdin=None,
         # collect output of running command in temporary log file, if desired
         fd, cmd_out_fp = tempfile.mkstemp(suffix='.log', prefix='easybuild-run-')
         os.close(fd)
-        _log.info(f'run_cmd: Output of "%{cmd}" will be logged to %{cmd_out_fp}')
+        _log.info(f'run_cmd: Output of "{cmd}" will be logged to {cmd_out_fp}')
     else:
         cmd_out_fp = None
 
@@ -163,8 +163,8 @@ def run(cmd, fail_on_error=True, split_stderr=False, stdin=None,
     if not in_dry_run and build_option('extended_dry_run'):
         if not hidden:
             silent = build_option('silent')
-            msg = f"  running command \"%{cmd_msg}s\"\n"
-            msg += f"  (in %{work_dir})"
+            msg = f"  running command \"{cmd_msg}s\"\n"
+            msg += f"  (in {work_dir})"
             dry_run_msg(msg, silent=silent)
 
         return RunResult(output='', exit_code=0, stderr=None)
@@ -193,7 +193,7 @@ def run(cmd, fail_on_error=True, split_stderr=False, stdin=None,
     output = proc.stdout.decode('utf-8', 'ignore')
 
     res = RunResult(output=output, exit_code=proc.returncode, stderr=None)
-    _log.info(f"Command '{cmd_msg}' exited with exit code {res.exit_code} and output:\n%{res.output}")
+    _log.info(f"Command '{cmd_msg}' exited with exit code {res.exit_code} and output:\n{res.output}")
 
     if not hidden:
         time_since_start = time_str_since(start_time)
