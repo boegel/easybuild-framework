@@ -134,7 +134,7 @@ def run(cmd, fail_on_error=True, split_stderr=False, stdin=None,
     """
 
     # temporarily raise a NotImplementedError until all options are implemented
-    if any((split_stderr, work_dir, stream_output, asynchronous)):
+    if any((work_dir, stream_output, asynchronous)):
         raise NotImplementedError
 
     if qa_patterns or qa_wait_patterns:
@@ -177,23 +177,30 @@ def run(cmd, fail_on_error=True, split_stderr=False, stdin=None,
         # 'input' value fed to subprocess.run must be a byte sequence
         stdin = stdin.encode()
 
+    stderr = subprocess.PIPE if split_stderr else subprocess.STDOUT
+
     # use bash as shell instead of the default /bin/sh used by subprocess.run
     # (which could be dash instead of bash, like on Ubuntu, see https://wiki.ubuntu.com/DashAsBinSh)
-    if shell:
-        executable = '/bin/bash'
-    else:
-        # stick to None (default value) when not running command via a shell
-        executable = None
+    # (which could be dash instead of bash, like on Ubuntu, see https://wiki.ubuntu.com/DashAsBinSh)
+    # stick to None (default value) when not running command via a shell
+    executable = '/bin/bash' if shell else None
 
     _log.info(f"Running command '{cmd_msg}' in {work_dir}")
-    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=fail_on_error,
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=stderr, check=fail_on_error,
                           input=stdin, shell=shell, executable=executable)
 
     # return output as a regular string rather than a byte sequence (and non-UTF-8 characters get stripped out)
     output = proc.stdout.decode('utf-8', 'ignore')
+    stderr_output = proc.stderr.decode('utf-8', 'ignore') if split_stderr else None
 
-    res = RunResult(output=output, exit_code=proc.returncode, stderr=None)
-    _log.info(f"Command '{cmd_msg}' exited with exit code {res.exit_code} and output:\n{res.output}")
+    res = RunResult(output=output, exit_code=proc.returncode, stderr=stderr_output)
+
+    if split_stderr:
+        log_msg = f"Command '{cmd_msg}' exited with exit code {res.exit_code}, "
+        log_msg += f"with stdout:\n{res.output}\nstderr:\n{res.stderr}"
+    else:
+        log_msg = f"Command '{cmd_msg}' exited with exit code {res.exit_code} and output:\n{res.output}"
+    _log.info(log_msg)
 
     if not hidden:
         time_since_start = time_str_since(start_time)
