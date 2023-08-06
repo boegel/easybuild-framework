@@ -70,7 +70,7 @@ CACHED_COMMANDS = [
     "sysctl -n machdep.cpu.brand_string",  # used in get_cpu_model (OS X)
     "sysctl -n machdep.cpu.vendor",  # used in get_cpu_vendor (OS X)
     "type module",  # used in ModulesTool.check_module_function
-    "bash -c 'ulimit -u'",  # used in det_parallelism
+    "ulimit -u",  # used in det_parallelism
 ]
 
 
@@ -120,7 +120,7 @@ def run(cmd, fail_on_error=True, split_stderr=False, stdin=None,
     :param hidden: do not show command in terminal output (when using --trace, or with --extended-dry-run / -x)
     :param in_dry_run: also run command in dry run mode
     :param work_dir: working directory to run command in (current working directory if None)
-    :param shell: execute command through a shell (enabled by default)
+    :param shell: execute command through bash shell (enabled by default)
     :param output_file: collect command output in temporary output file
     :param stream_output: stream command output to stdout
     :param asynchronous: run command asynchronously
@@ -177,9 +177,17 @@ def run(cmd, fail_on_error=True, split_stderr=False, stdin=None,
         # 'input' value fed to subprocess.run must be a byte sequence
         stdin = stdin.encode()
 
+    # use bash as shell instead of the default /bin/sh used by subprocess.run
+    # (which could be dash instead of bash, like on Ubuntu)
+    if shell:
+        executable = '/bin/bash'
+    else:
+        # stick to None (default value) when not running command via a shell
+        executable = None
+
     _log.info(f"Running command '{cmd_msg}' in {work_dir}")
     proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=fail_on_error,
-                          input=stdin, shell=shell)
+                          input=stdin, shell=shell, executable=executable)
 
     # return output as a regular string rather than a byte sequence (and non-UTF-8 characters get stripped out)
     output = proc.stdout.decode('utf-8', 'ignore')

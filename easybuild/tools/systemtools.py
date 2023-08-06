@@ -1177,11 +1177,8 @@ def det_parallelism(par=None, maxpar=None):
         except AttributeError:
             # No cache -> Calculate value from current system values
             par = get_avail_core_count()
-            # determine max user processes via 'ulimit -u';
-            # we must run 'ulimit -u' via bash, because the ulimit available in /bin/sh
-            # (default shell used by subprocess.run) may not support -u
-            # (since it could be dash instead of bash, like in Ubuntu)
-            res = run("bash -c 'ulimit -u'", in_dry_run=True, hidden=True)
+            # determine max user processes via ulimit -u
+            res = run("ulimit -u", in_dry_run=True, hidden=True)
             try:
                 if res.output.startswith("unlimited"):
                     maxuserproc = 2 ** 32 - 1
