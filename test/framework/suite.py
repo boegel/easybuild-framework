@@ -121,6 +121,7 @@ log = fancylogger.getLogger()
 # note: make sure the options unit tests run first, to avoid running some of them with a readily initialized config
 tests = [gen, d, bl, o, r, ef, ev, ebco, ep, e, mg, m, mt, f, run, a, robot, b, v, g, tcv, tc, t, c, s, lic, f_c,
          tw, p, i, pkg, env, et, st, h, ct, lib, u, es, ou]
+tests = [s]
 
 SUITE = unittest.TestSuite([x.suite() for x in tests])
 res = unittest.TextTestRunner().run(SUITE)

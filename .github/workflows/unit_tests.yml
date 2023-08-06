@@ -205,6 +205,7 @@ jobs:
           sudo touch /tmp/file_to_overwrite_for_easybuild_test_copy_file.txt
           sudo chmod o+w /tmp/file_to_overwrite_for_easybuild_test_copy_file.txt
           # run test suite
+          ulimit -u
           python -O -m test.framework.suite 2>&1 | tee test_framework_suite.log
           # try and make sure output of running tests is clean (no printed messages/warnings)
           IGNORE_PATTERNS="no GitHub token available|skipping SvnRepository test|requires Lmod as modules tool|stty: 'standard input': Inappropriate ioctl for device|CryptographyDeprecationWarning: Python 3.[56]|from cryptography.* import |CryptographyDeprecationWarning: Python 2|Blowfish|GC3Pie not available, skipping test"
