@@ -77,6 +77,36 @@ CACHED_COMMANDS = [
 RunResult = namedtuple('RunResult', ('output', 'exit_code', 'stderr'))
 
 
+def run_cmd_cache(func):
+    """Function decorator to cache (and retrieve cached) results of running commands."""
+    cache = {}
+
+    @functools.wraps(func)
+    def cache_aware_func(cmd, *args, **kwargs):
+        """Retrieve cached result of selected commands, or run specified and collect & cache result."""
+        # cache key is combination of command and input provided via stdin
+        key = (cmd, kwargs.get('inp', None))
+        # fetch from cache if available, cache it if it's not, but only on cmd strings
+        if isinstance(cmd, str) and key in cache:
+            _log.debug("Using cached value for command '%s': %s", cmd, cache[key])
+            return cache[key]
+        else:
+            res = func(cmd, *args, **kwargs)
+            if cmd in CACHED_COMMANDS:
+                cache[key] = res
+            return res
+
+    # expose clear/update methods of cache to wrapped function
+    cache_aware_func.clear_cache = cache.clear
+    cache_aware_func.update_cache = cache.update
+
+    return cache_aware_func
+
+
+run_cache = run_cmd_cache
+
+
+@run_cache
 def run(cmd, fail_on_error=True, split_stderr=False, stdin=None,
         hidden=False, in_dry_run=False, work_dir=None, shell=True,
         output_file=False, stream_output=False, asynchronous=False,
@@ -104,7 +134,7 @@ def run(cmd, fail_on_error=True, split_stderr=False, stdin=None,
     """
 
     # temporarily raise a NotImplementedError until all options are implemented
-    if any((not fail_on_error, split_stderr, in_dry_run, work_dir, output_file, stream_output, asynchronous)):
+    if any((split_stderr, work_dir, stream_output, asynchronous)):
         raise NotImplementedError
 
     if qa_patterns or qa_wait_patterns:
@@ -117,17 +147,22 @@ def run(cmd, fail_on_error=True, split_stderr=False, stdin=None,
     else:
         raise EasyBuildError(f"Unknown command type ('{type(cmd)}'): {cmd}")
 
-    silent = build_option('silent')
-
     if work_dir is None:
         work_dir = os.getcwd()
 
-    # output file for command output (only used if output_file is enabled)
-    cmd_out_fp = None
+    # temporary output file for command output, if requested
+    if output_file or not hidden:
+        # collect output of running command in temporary log file, if desired
+        fd, cmd_out_fp = tempfile.mkstemp(suffix='.log', prefix='easybuild-run-')
+        os.close(fd)
+        _log.info(f'run_cmd: Output of "%{cmd}" will be logged to %{cmd_out_fp}')
+    else:
+        cmd_out_fp = None
 
     # early exit in 'dry run' mode, after printing the command that would be run (unless 'hidden' is enabled)
-    if build_option('extended_dry_run'):
+    if not in_dry_run and build_option('extended_dry_run'):
         if not hidden:
+            silent = build_option('silent')
             msg = f"  running command \"%{cmd_msg}s\"\n"
             msg += f"  (in %{work_dir})"
             dry_run_msg(msg, silent=silent)
@@ -143,7 +178,8 @@ def run(cmd, fail_on_error=True, split_stderr=False, stdin=None,
         stdin = stdin.encode()
 
     _log.info(f"Running command '{cmd_msg}' in {work_dir}")
-    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, input=stdin, shell=shell)
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=fail_on_error,
+                          input=stdin, shell=shell)
 
     # return output as a regular string rather than a byte sequence (and non-UTF-8 characters get stripped out)
     output = proc.stdout.decode('utf-8', 'ignore')
@@ -183,32 +219,6 @@ def cmd_trace_msg(cmd, start_time, work_dir, stdin, cmd_out_fp):
     lines.append('\t' + cmd)
 
     trace_msg('\n'.join(lines))
-
-
-def run_cmd_cache(func):
-    """Function decorator to cache (and retrieve cached) results of running commands."""
-    cache = {}
-
-    @functools.wraps(func)
-    def cache_aware_func(cmd, *args, **kwargs):
-        """Retrieve cached result of selected commands, or run specified and collect & cache result."""
-        # cache key is combination of command and input provided via stdin
-        key = (cmd, kwargs.get('inp', None))
-        # fetch from cache if available, cache it if it's not, but only on cmd strings
-        if isinstance(cmd, str) and key in cache:
-            _log.debug("Using cached value for command '%s': %s", cmd, cache[key])
-            return cache[key]
-        else:
-            res = func(cmd, *args, **kwargs)
-            if cmd in CACHED_COMMANDS:
-                cache[key] = res
-            return res
-
-    # expose clear/update methods of cache to wrapped function
-    cache_aware_func.clear_cache = cache.clear
-    cache_aware_func.update_cache = cache.update
-
-    return cache_aware_func
 
 
 def get_output_from_process(proc, read_size=None, asynchronous=False):
