@@ -2221,7 +2221,7 @@ class ToolchainTest(EnhancedTestCase):
         if 'LIBRARY_PATH' in os.environ:
             del os.environ['LIBRARY_PATH']
 
-        script = find_eb_script('rpath_args.py')
+        script = ' '.join([sys.executable, find_eb_script('rpath_args.py')])
 
         rpath_inc = ','.join([
             os.path.join(self.test_prefix, 'lib'),
