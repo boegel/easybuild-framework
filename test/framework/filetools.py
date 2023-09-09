@@ -226,7 +226,7 @@ class FileToolsTest(EnhancedTestCase):
 
     def test_which(self):
         """Test which function for locating commands."""
-        python = ft.which('python')
+        python = ft.which('ls')
         self.assertTrue(python and os.path.exists(python) and os.path.isabs(python))
 
         invalid_cmd = 'i_really_do_not_expect_a_command_with_a_name_like_this_to_be_available'
