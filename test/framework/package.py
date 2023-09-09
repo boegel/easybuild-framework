@@ -45,7 +45,7 @@ from easybuild.tools.version import VERSION as EASYBUILD_VERSION
 FPM_OUTPUT_FILE = 'fpm_mocked.out'
 
 # purposely using non-bash script, to detect issues with shebang line being ignored (run_cmd with shell=False)
-MOCKED_FPM = """#!/usr/bin/env python
+MOCKED_FPM = """#!%(python)s
 import os, sys
 
 def verbose(msg):
@@ -138,7 +138,11 @@ def mock_fpm(tmpdir):
     """Put mocked version of fpm command in place in specified tmpdir."""
     # put mocked 'fpm' command in place, just for testing purposes
     fpm = os.path.join(tmpdir, 'fpm')
-    write_file(fpm, MOCKED_FPM % {'fpm_output_file': os.path.join(tmpdir, FPM_OUTPUT_FILE)})
+    mocked_fpm_txt = MOCKED_FPM % {
+        'fpm_output_file': os.path.join(tmpdir, FPM_OUTPUT_FILE),
+        'python': sys.executable,
+    }
+    write_file(fpm, mocked_fpm_txt)
     adjust_permissions(fpm, stat.S_IXUSR, add=True)
 
     # also put mocked rpmbuild in place
