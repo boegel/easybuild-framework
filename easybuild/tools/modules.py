@@ -1330,11 +1330,11 @@ class EnvironmentModules(EnvironmentModulesTcl):
 
     def __init__(self, *args, **kwargs):
         """Constructor, set Environment Modules-specific class variable values."""
-        # ensure in-depth modulepath search (MODULES_AVAIL_INDEPTH has been introduced in v4.3)
+        # ensure in-depth modulepath search ($MODULES_AVAIL_INDEPTH has been introduced in v4.3)
         setvar('MODULES_AVAIL_INDEPTH', '1', verbose=False)
-        # match against module name start (MODULES_SEARCH_MATCH has been introduced in v4.3)
+        # match against module name start ($MODULES_SEARCH_MATCH has been introduced in v4.3)
         setvar('MODULES_SEARCH_MATCH', 'starts_with', verbose=False)
-        # ensure no debug message (MODULES_VERBOSITY has been introduced in v4.3)
+        # ensure no debug message ($MODULES_VERBOSITY has been introduced in v4.3)
         setvar('MODULES_VERBOSITY', 'normal', verbose=False)
         # make module search case sensitive (search is case insensitive by default since v5.0)
         setvar('MODULES_ICASE', 'never', verbose=False)
@@ -1344,9 +1344,9 @@ class EnvironmentModules(EnvironmentModulesTcl):
         setvar('MODULES_REDIRECT_OUTPUT', '0', verbose=False)
         # make sure modulefile cache is ignored (cache mechanism supported since v5.3)
         setvar('MODULES_IGNORE_CACHE', '1', verbose=False)
-        # ensure only module names are returned on avail (MODULES_AVAIL_TERSE_OUTPUT added in v4.7)
+        # ensure only module names are returned on avail ($MODULES_AVAIL_TERSE_OUTPUT added in v4.7)
         setvar('MODULES_AVAIL_TERSE_OUTPUT', '', verbose=False)
-        # ensure only module names are returned on list (MODULES_LIST_TERSE_OUTPUT added in v4.7)
+        # ensure only module names are returned on list ($MODULES_LIST_TERSE_OUTPUT added in v4.7)
         setvar('MODULES_LIST_TERSE_OUTPUT', '', verbose=False)
 
         super(EnvironmentModules, self).__init__(*args, **kwargs)
