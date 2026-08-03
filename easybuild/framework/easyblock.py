@@ -217,6 +217,7 @@ class EasyBlock:
         self.ext_instances = []
         self.skip = None
         self.module_extra_extensions = ''  # extra stuff for module file required by extensions
+        self.include_exts_info_in_mod_file = True
 
         # indicates whether or not this instance represents an extension
         # may be set to True by ExtensionEasyBlock
@@ -1553,7 +1554,7 @@ class EasyBlock:
         """
         Create the module description.
         """
-        return self.module_generator.get_description()
+        return self.module_generator.get_description(with_exts_info=self.include_exts_info_in_mod_file)
 
     def make_module_pythonpath(self):
         """
@@ -1659,11 +1660,12 @@ class EasyBlock:
         # add stuff specific to individual extensions
         lines = [self.module_extra_extensions]
 
-        # set environment variable that specifies list of extensions
-        # We need only name and version, so don't resolve templates
-        exts_list = self.make_extension_string(ext_sep=',', sort=False)
-        env_var_name = 'EBEXTSLIST' + convert_name(self.name, upper=True)
-        lines.append(self.module_generator.set_environment(env_var_name, exts_list))
+        if self.include_exts_info_in_mod_file:
+            # set environment variable that specifies list of extensions
+            # We need only name and version, so don't resolve templates
+            exts_list = self.make_extension_string(ext_sep=',', sort=False)
+            env_var_name = 'EBEXTSLIST' + convert_name(self.name, upper=True)
+            lines.append(self.module_generator.set_environment(env_var_name, exts_list))
 
         return ''.join(lines)
 
@@ -2165,6 +2167,10 @@ class EasyBlock:
 
         exts_cnt = len(self.ext_instances)
 
+        # disable inclusion of extensions info in generated (fake) module file,
+        # so we can check whether installing of extensions has impact on contents of fake module file
+        self.include_exts_info_in_mod_file = False
+
         # determine up build environment, and cache it so we can quickly restore it
         if self.dry_run:
             self.dry_run_msg("defining build environment based on cached build environment from prepare step...")
@@ -2213,7 +2219,7 @@ class EasyBlock:
                 self.make_module_step(fake=True)
                 new_fake_mod_file_txt = read_file(fake_mod_file_path)
                 if new_fake_mod_file_txt != fake_mod_file_txt:
-                    self.log.info("Re-loading module {self.short_mod_name}, contents of fake module file changed!")
+                    self.log.info(f"Re-loading module {self.short_mod_name}, contents of fake module file changed!")
                     self.modules_tool.load([self.short_mod_name])
                     build_env = copy_current_env()
 
@@ -2238,6 +2244,9 @@ class EasyBlock:
         # restore "parent" build environment (in which fake module is not loaded)
         if self.cached_build_env:
             restore_env(self.cached_build_env)
+
+        # re-enable inclusion of extension info in generated module file
+        self.include_exts_info_in_mod_file = True
 
     def install_extensions_parallel(self, install=True):
         """

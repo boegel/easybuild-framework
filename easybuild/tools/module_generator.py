@@ -530,7 +530,7 @@ class ModuleGenerator:
         """
         raise NotImplementedError
 
-    def get_description(self, conflict=True):
+    def get_description(self, conflict=True, with_exts_info=True):
         """
         Generate a description.
         """
@@ -669,7 +669,7 @@ class ModuleGenerator:
         """
         raise NotImplementedError
 
-    def _generate_help_text(self):
+    def _generate_help_text(self, with_exts_info=True):
         """
         Generate syntax-independent help text used for `module help`.
         """
@@ -714,9 +714,10 @@ class ModuleGenerator:
             ] + ['* %s' % d for d in nub(multi_deps)])
             lines.extend(self._generate_section("Compatible modules", compatible_modules_txt))
 
-        # Extensions (if any)
-        extensions = self.app.make_extension_string()
-        lines.extend(self._generate_section("Included extensions", '\n'.join(wrap(extensions, 78))))
+        if with_exts_info:
+            # Extensions (if any)
+            extensions = self.app.make_extension_string()
+            lines.extend(self._generate_section("Included extensions", '\n'.join(wrap(extensions, 78))))
 
         return '\n'.join(lines)
 
@@ -747,7 +748,7 @@ class ModuleGenerator:
             res = ['', '', sec_name, '=' * len(sec_name), sec_txt]
         return res
 
-    def _generate_whatis_lines(self):
+    def _generate_whatis_lines(self, with_exts_info=True):
         """
         Generate a list of entries used for `module whatis`.
         """
@@ -765,7 +766,7 @@ class ModuleGenerator:
                 whatis.append("Compatible modules: %s" % ', '.join(multi_deps))
 
             extensions = self.app.make_extension_string()
-            if extensions:
+            if extensions and with_exts_info:
                 whatis.append("Extensions: %s" % extensions)
 
         return whatis
@@ -887,13 +888,14 @@ class ModuleGeneratorTcl(ModuleGenerator):
 
         return '\n'.join(lines)
 
-    def get_description(self, conflict=True):
+    def get_description(self, conflict=True, with_exts_info=True):
         """
         Generate a description.
         """
+        help_txt = self._generate_help_text(with_exts_info=with_exts_info)
         lines = [
             "proc ModulesHelp { } {",
-            "    puts stderr {%s" % re.sub(r'([{}\[\]])', r'\\\1', self._generate_help_text()),
+            "    puts stderr {%s" % re.sub(r'([{}\[\]])', r'\\\1', help_txt),
             "    }",
             '}',
             '',
@@ -901,7 +903,7 @@ class ModuleGeneratorTcl(ModuleGenerator):
 
         lines.extend([
             "module-whatis {%s}" % re.sub(r'([{}\[\]])', r'\\\1', line)
-            for line in self._generate_whatis_lines()
+            for line in self._generate_whatis_lines(with_exts_info=with_exts_info)
         ])
 
         lines.extend(['', "set root " + self.app.installdir])
@@ -1355,17 +1357,18 @@ class ModuleGeneratorLua(ModuleGenerator):
 
         return '\n'.join(lines)
 
-    def get_description(self, conflict=True):
+    def get_description(self, conflict=True, with_exts_info=True):
         """
         Generate a description.
         """
+        help_txt = self._generate_help_text(with_exts_info=with_exts_info)
         lines = [
-            'help(%s%s' % (self.START_STR, self.check_str(self._generate_help_text())),
+            'help(%s%s' % (self.START_STR, self.check_str(help_txt)),
             '%s)' % self.END_STR,
             '',
         ]
 
-        for line in self._generate_whatis_lines():
+        for line in self._generate_whatis_lines(with_exts_info=with_exts_info):
             lines.append("whatis(%s%s%s)" % (self.START_STR, self.check_str(line), self.END_STR))
 
         lines.extend(['', 'local root = "%s"' % self.app.installdir])
