@@ -48,6 +48,7 @@ Authors:
 import concurrent
 import contextlib
 import copy
+import difflib
 import functools
 import glob
 import inspect
@@ -2213,7 +2214,13 @@ class EasyBlock:
                 self.make_module_step(fake=True)
                 new_fake_mod_file_txt = read_file(fake_mod_file_path)
                 if new_fake_mod_file_txt != fake_mod_file_txt:
-                    self.log.info("Re-loading module {self.short_mod_name}, contents of fake module file changed!")
+                    diff_lines = difflib.ndiff(fake_mod_file_txt.splitlines(), new_fake_mod_file_txt.splitlines())
+                    diff_txt = '\n'.join(diff_lines)
+                    self.log.info("Contents of fake module file have changed, diff: " + diff_txt)
+
+                    fake_mod_file_txt = new_fake_mod_file_txt
+
+                    self.log.info(f"Re-loading (fake) module {self.short_mod_name}")
                     self.modules_tool.load([self.short_mod_name])
                     build_env = copy_current_env()
 
